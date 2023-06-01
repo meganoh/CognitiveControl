@@ -5,8 +5,13 @@
         <script src="jspsych/dist/jspsych.js"></script>
         <script src="jspsych/dist/plugin-html-keyboard-response.js"></script>
         <script src="jspsych/dist/plugin-image-keyboard-response.js"></script>
+        <script src="jspsych/dist/plugin-html-button-response.js"></script>
+        <script src="jspsych/dist/plugin-call-function.js"></script>
+        <script src="jspsych/dist/plugin-animation.js"></script>
         <script src="jspsych/dist/plugin-preload.js"></script>
         <script src="jspsych/dist/plugin-external-html.js"></script>
+        <script src="jspsych/dist/plugin-survey-html-form.js"></script>
+
 
         <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
     </head>
@@ -45,16 +50,11 @@
 
          /* update trial number */
         var update_trial_number = {
-            type: "call-function",
+            type: jsPsychCallFunction,
             func: function() { 
                 window.trl_num++;
             }
         };
-
-
-        /* PRELOAD IMAGES */ 
-        var images = []
-
   
         /* TIMELINE */
   
@@ -122,13 +122,82 @@
         }
         timeline.push(instr_imagery);
 
+
+
+        /* IMAGERY PROCEDURE */
+        /* FIGURE OUT DYNAMIC STIMULUS THING */
+
+        var ima_response = {
+            type: jsPsychHtmlKeyboardResponse,
+            choices: ['1','2','3','4','5'],
+            stimulus: 'How vivid was your mental image?',
+            prompt: '<p> Not vivid at all [1] - As vivid as real seeing [5]',
+            data: {test_part: 'ima_practice'}
+        };
+
+        var ima_procedure = {
+            timeline: [fixation, ima_response],
+            repetitions: num_ima_trials
+        };
+        timeline.push(ima_procedure);
+
+
+        /* CRITICAL TRIAL */
+        /* ADD DYNAMIC STIMULUS THING */
+
+        var critical_question = {
+            type: jsPsychHtmlButtonResponse,
+            stimulus: `
+            <p> On the last trial, was there a grating presented on the screen? </p>
+            <p> No, there was only noise on the screen, any grating I saw was my imagination [No]  </p>
+            <p> Yes, there was actually a left-tilted grating on the screen [Left tilted]  </p>
+            <p> Yes, there was actually a right-tilted grating on the screen [Right tilted]  </p>
+            <img src='img/critical_trial.png' width=600 ></img>
+            </div> 
+            <p> Click on the button corresponding to your answer to continue  </p>
+            ` ,
+            choices: ['No','Left tilted','Right tilted'],
+            data: {
+                test_part: 'critical_trial', correct_response: 'Left tilted'
+            },
+            on_finish: function(data){
+                data.correct = data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(data.correct_response);
+            }
+        };
+
+        var confidence_judgement = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "How confident are you that you answered the last question correctly? <br>",
+            prompt:
+            "<br> Not confident at all [1] - Very confident, completely sure [5]" ,
+            choices: ['1','2','3','4','5'],
+            data: {
+                test_part: 'confidence'
+            }
+        }
+        timeline.push(fixation, ima_response, critical_question, confidence_judgement);
+
+
+        /* DEBRIEF */
+        var debrief_questions = {
+            type: jsPsychSurveyHtmlForm,
+            questions: [
+                {prompt: "What is your age?", rows: 2, columns: 40},
+                {prompt: "The answer to this question will not affect your payment. " +
+                "Did you actually imagine the gratings when we asked you to?", rows: 2, columns: 40},
+                {prompt: "Do you have any other comments?", rows: 2, columns: 40},
+            ]
+        };
+        timeline.push(debrief_questions);
+
         
         /* INFORMATION SHEET */
 
         var information_sheet = {
             type: jsPsychExternalHtml,
             url: "InformationSheet.html",
-            cont_btn: "Start"
+            cont_btn: "Start",
+            execute_script: true
         };
 
         timeline.push(information_sheet);
