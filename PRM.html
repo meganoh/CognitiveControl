@@ -71,7 +71,7 @@
 
         var preload = {
             type: jsPsychPreload,
-            stimulus: ["img/15.png", "img/75.png"]
+            stimulus: ["img/stim_1_vis_50.png", "img/stim_2_vis_50.png"]
         };    
         timeline.push(preload);
 
@@ -87,12 +87,40 @@
             <p> After every trial you will be asked to report how vivid your imagery was </p>
             <img src='img/example_stim-01.png' width=600 ></img>
             </div>
-            <p>Press any key to continue </p>
+            <p>Press [space] to continue </p>
         `,
-        post_trial_gap: 2000, 
+            choices: [' '],
         };
         timeline.push(instructions);
 
+        
+        /* IMAGERY INSTRUCTIONS */
+
+        var instr_imagery = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                if (window.stim_id == 0) {
+                    var stim_instr = "a left tilted grating";
+                    var stim_pic = 'img/stim_1_vis_50.png';
+                } else if (window.stim_id == 1) {
+                    var stim_instr = "a right tilted grating";
+                    var stim_pic = 'img/stim_2_vis_50.png';
+                }
+                return `
+                <p> During the next few trials, please imagine `  + stim_instr + `</p> 
+                <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below) </p>
+                <p> Please keep your eyes open and look at the noise while imagining </p>
+                <p> After each trial, you will be asked to rate the vividness of your imagery </p> 
+                <p> on a scale from 1 (not vivid at all) to 5 (perfectly clear and as vivid as real seeing) </p>
+                <img src=` + stim_pic + ` width=200 ></img>
+                </div>
+                <p>Press [space] to continue </p>
+                ` 
+            },
+            choices: [' '],
+            post_trial_gap: 500, 
+        }
+        timeline.push(instr_imagery);
 
         
         /* INFORMATION SHEET */
