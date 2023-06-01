@@ -18,13 +18,23 @@
   
         /* VARIABLES */
   
-        const stim_dur = 2000;
+        const num_steps = 20;
+        const stim_dur  = 2000; /* milliseconds */
         const fix_dur = 200;
-  
-        const num_trials = 9;
-  
+
+        const num_ima_trials = 9; /*10th is the critical one */
+        const num_ima_reps = 1; /* how often to repeat the 2 orientations */
+
+
+        /* GLOBAL VARIABLES */
+        window.vis_level = 38;
+        window.stim_id  = 0; /* left */
+        window.trl_num = 0;
+        window.block_num = 0;
+
         /*ESSENTIALS*/
-  
+
+        /* fixation */
         var fixation = {
           type: jsPsychHtmlKeyboardResponse,
           stimulus: '<div style="font-size:60px;">+</div>',
@@ -32,11 +42,23 @@
           trial_duration: fix_dur,
           data: {task: 'fixation'}
         };
+
+         /* update trial number */
+        var update_trial_number = {
+            type: "call-function",
+            func: function() { 
+                window.trl_num++;
+            }
+        };
+
+
+        /* PRELOAD IMAGES */ 
+        var images = []
+
   
         /* TIMELINE */
   
         var timeline = [];
-
 
         /* WELCOME MESSAGE*/
         
@@ -46,6 +68,32 @@
         };
 
         timeline.push(welcome)
+
+        var preload = {
+            type: jsPsychPreload,
+            stimulus: ["img/15.png", "img/75.png"]
+        };    
+        timeline.push(preload);
+
+        /* INSTRUCTIONS */
+        
+        var instructions = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: `
+            <p> During the next part of this experiment you will imagine <strong> gratings </strong> while looking at <strong>noise</strong> (see below) </p>
+            <p> <strong>Gratings</strong> are images of alternating black and white lines (left) </p>
+            <p> <strong>Noise</strong> is a collection of random black and white pixels (middle) </p>
+            <p> Please imagine the grating as vividly as possible, as if it was actually presented on the screen (right). </p>
+            <p> After every trial you will be asked to report how vivid your imagery was </p>
+            <img src='img/example_stim-01.png' width=600 ></img>
+            </div>
+            <p>Press any key to continue </p>
+        `,
+        post_trial_gap: 2000, 
+        };
+        timeline.push(instructions);
+
+
         
         /* INFORMATION SHEET */
 
@@ -79,18 +127,6 @@
         };
 
         timeline.push(consent_form)
-        
-
-        /* INSTRUCTIONS */
-        
-        var instructions = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: "Here is where the instructions go. <br>"+
-            "We can write a lot of things like <strong> bold </strong> words <br>"+
-            "<br><br> Please press [space] to continue ",
-            choices: ['spaces']
-        };
-        timeline.push(instructions)
 
 
 
