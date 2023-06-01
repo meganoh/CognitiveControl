@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My experiment</title>
+        <script src="jspsych/dist/jspsych.js"></script>
+        <script src="jspsych/dist/plugin-html-keyboard-response.js"></script>
+        <script src="jspsych/dist/plugin-image-keyboard-response.js"></script>
+        <script src="jspsych/dist/plugin-preload.js"></script>
+        <script src="jspsych/dist/plugin-external-html.js"></script>
+
+        <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body></body>
+
+    <script>
+  
+        /* VARIABLES */
+  
+        const stim_dur = 2000;
+        const fix_dur = 200;
+  
+        const num_trials = 9;
+  
+        /*ESSENTIALS*/
+  
+        var fixation = {
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: '<div style="font-size:60px;">+</div>',
+          choices: "NO_KEYS",
+          trial_duration: fix_dur,
+          data: {task: 'fixation'}
+        };
+  
+        /* TIMELINE */
+  
+        var timeline = [];
+
+
+        /* WELCOME MESSAGE*/
+        
+        var welcome = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "Welcome to the experiment. Press any key to begin."
+        };
+
+        timeline.push(welcome)
+
+        
+        var test = {
+            type: jsPsychExternalHtml,
+            url: "test.html",
+            cont_btn: "Start"
+        };
+
+        timeline.push(test);
+        
+        /* INFORMATION SHEET */
+
+        var information_sheet = {
+            type: jsPsychExternalHtml,
+            url: "InformationSheet.html",
+            cont_btn: "Start"
+        };
+
+        timeline.push(information_sheet);
+
+
+        /* CONSENT */
+
+        var check_consent_function = function(elem) {
+            if (document.getElementById('consent_checkbox').checked) {
+                return true
+            }
+            else {
+                alert("If you wish to participate, must check the box next to the statement 'I agree to participate in this study'");
+                return false;
+            }
+            return false
+        };
+
+        var consent_form = {
+            type: jsPsychExternalHtml,
+            url: "ConsentForm.html",
+            cont_btn: "Start",
+            check_fn: check_consent_function
+        };
+
+        timeline.push(consent_form)
+        
+
+        /* INSTRUCTIONS */
+        
+        var instructions = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: "Here is where the instructions go. <br>"+
+            "We can write a lot of things like <strong> bold </strong> words <br>"+
+            "<br><br> Please press [space] to continue ",
+            choices: ['spaces']
+        };
+        timeline.push(instructions)
+
+
+
+        /* INIT JS PSYCH */
+        
+        var jsPsych = initJsPsych({
+            on_finish: function() {
+                jsPsych.data.displayData();
+            }
+        });
+
+        jsPsych.run(timeline);
+  
+    </script>
+</html>
