@@ -55,7 +55,16 @@
                 window.trl_num++;
             }
         };
-  
+        
+        /* RESPONSE SCALES */
+        var vividness_scale = [
+            "1 (not at all vivid)",
+            "2",
+            "3",
+            "4",
+            "5 (as vivid as real seeing)"
+            ];
+        
         var confidence_scale = [
             "1 (not at all confident)",
             "2",
@@ -63,6 +72,7 @@
             "4",
             "5 (very confident)"
             ];
+
 
         /* TIMELINE */
         var timeline = [];
@@ -127,25 +137,23 @@
 
         /* INSTRUCTIONS */
         var instructions = {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: `
-            <p> During the next part of this experiment you will imagine <strong> gratings </strong> while looking at <strong>noise</strong> (see below) </p>
-            <p> <strong>Gratings</strong> are images of alternating black and white lines (left) </p>
-            <p> <strong>Noise</strong> is a collection of random black and white pixels (middle) </p>
-            <p> Please imagine the grating as vividly as possible, as if it was actually presented on the screen (right). </p>
-            <p> After every trial you will be asked to report how vivid your imagery was </p>
-            <img src='img/example_stim-01.png' width=600 ></img>
-            </div>
-            <p>Press [space] to continue </p>
-        `,
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+                <p> During the next part of this experiment you will imagine <strong> gratings </strong> while looking at <strong> noise </strong> (see below). </p>
+                <p> <strong> Gratings </strong> are images of alternating black and white lines (left). </p>
+                <p> <strong> Noise </strong> is a collection of random black and white pixels (middle). </p>
+                <p> Please imagine the grating as vividly as possible, as if it was actually presented on the screen (right). </p>
+                <p> After every trial you will be asked to report how vivid your imagery was. </p>
+                <img src='img/example_stim-01.png' width=600 ></img>
+                <p>Press [space] to continue </p>
+            `,
             choices: [' '],
         };
         timeline.push(instructions);
 
         
         /* IMAGERY INSTRUCTIONS */
-
-        var instr_imagery = {
+        var instructions_imagery = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: function() {
                 if (window.stim_id == 0) {
@@ -156,25 +164,21 @@
                     var stim_pic = 'img/stim_2_vis_50.png';
                 }
                 return `
-                <p> During the next few trials, please imagine `  + stim_instr + `</p> 
-                <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below) </p>
-                <p> Please keep your eyes open and look at the noise while imagining </p>
-                <p> After each trial, you will be asked to rate the vividness of your imagery </p> 
-                <p> on a scale from 1 (not vivid at all) to 5 (perfectly clear and as vivid as real seeing) </p>
-                <img src=` + stim_pic + ` width=200 ></img>
-                </div>
-                <p>Press [space] to continue </p>
-                ` 
+                    <p> During the next few trials, please imagine ` + stim_instr + `</p> 
+                    <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
+                    <p> Please keep your eyes open and look at the noise while imagining. </p>
+                    <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
+                    <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
+                    <img src=` + stim_pic + ` width=200 ></img>
+                    <p>Press [space] to continue </p>` 
             },
             choices: [' '],
             post_trial_gap: 500, 
         }
-        timeline.push(instr_imagery);
-
+        timeline.push(instructions_imagery);
 
 
         /* IMAGERY PROCEDURE */
-        /* FIGURE OUT DYNAMIC STIMULUS THING */
         function makeStimSequence(startValue, stopValue,cardinality,stim) {
             var arr = [];
             if (stim > 0 ){
@@ -206,11 +210,13 @@
         };
 
         var ima_response = {
-            type: jsPsychHtmlKeyboardResponse,
-            choices: ['1','2','3','4','5'],
-            stimulus: 'How vivid was your mental image?',
-            prompt: '<p> Not vivid at all [1] - As vivid as real seeing [5]',
-            data: {test_part: 'ima_practice'}
+            type: jsPsychSurveyLikert,
+            preamble: '<p> <strong> Vividness Judgement </strong> </p>',
+            questions: [
+                {prompt: "How vivid was your mental image?", name: `vividness judgement trial`, labels: vividness_scale, required: true},
+            ],
+            scale_width: 500,
+            data: {test_part: 'vividness judgement'},
         };
 
         var ima_procedure = {
@@ -255,7 +261,8 @@
             questions: [
                 {prompt: "How confident are you that you answered the last question correctly?", name: "confidence_crit", labels: confidence_scale, required: true},
             ],
-            data: {test_part: 'confidence'},
+            scale_width: 500,
+            data: {test_part: 'confidence judgement'},
         };
         timeline.push(fixation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
 
@@ -269,7 +276,7 @@
 
                 <p> What is your age? 
 
-                    <input type="number" id="debrief_question_age" name="response_age" min="18" max="120" />
+                    <input type="number" id="debrief_question_age" name="age" min="18" max="120" />
 
                 </p>
 
