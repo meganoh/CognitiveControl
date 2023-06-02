@@ -16,7 +16,6 @@
         <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
     </head>
     <body></body>
-    
 
     
     <script>
@@ -126,6 +125,35 @@
 
         /* IMAGERY PROCEDURE */
         /* FIGURE OUT DYNAMIC STIMULUS THING */
+        function makeStimSequence(startValue, stopValue,cardinality,stim) {
+            var arr = [];
+            if (stim > 0 ){
+                var step = (stopValue - startValue) / (cardinality - 1);
+                for (var i = 0; i < cardinality; i++) {
+                    var vis = Math.round(startValue + (step * i));
+                    arr.push("img/stim_" + stim.toString() + "_vis_" + vis.toString() + ".png");
+                }
+            } else if (stim == 0){
+                ranNoiseOrder = jsPsych.randomization.repeat([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],1);
+                for (var i = 0; i < cardinality; i++) {
+                var random_number = ranNoiseOrder[i];
+                arr.push("img/noise_" + random_number.toString() + ".png");
+                }
+            }
+            return arr;
+        };
+
+        var show_dynamic_noise = {
+            type: jsPsychAnimation,
+            stimuli: function() {
+            arr = makeStimSequence(1,window.vis_level,num_steps,0);
+            jsPsych.pluginAPI.preloadImages(arr)
+            return arr
+            },
+            choices: ["NO_KEYS"],
+            frame_isi: 0,
+            frame_time: Math.round(stim_dur/num_steps)
+        };
 
         var ima_response = {
             type: jsPsychHtmlKeyboardResponse,
@@ -136,14 +164,24 @@
         };
 
         var ima_procedure = {
-            timeline: [fixation, ima_response],
+            timeline: [fixation, show_dynamic_noise, ima_response],
             repetitions: num_ima_trials
         };
         timeline.push(ima_procedure);
 
 
         /* CRITICAL TRIAL */
-        /* ADD DYNAMIC STIMULUS THING */
+        var show_dynamic_stimulus= {
+            type: jsPsychAnimation,
+            stimuli: function() {
+                arr = makeStimSequence(1,window.vis_level,num_steps,0);
+                jsPsych.pluginAPI.preloadImages(arr)
+                return arr
+            },
+            choices: ["NO_KEYS"],
+            frame_isi: 0,
+            frame_time: Math.round(stim_dur/num_steps)
+        };
 
         var critical_question = {
             type: jsPsychHtmlButtonResponse,
@@ -175,7 +213,7 @@
                 test_part: 'confidence'
             }
         }
-        timeline.push(fixation, ima_response, critical_question, confidence_judgement);
+        timeline.push(fixation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement);
 
 
         /* DEBRIEF */
