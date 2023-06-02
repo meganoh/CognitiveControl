@@ -26,7 +26,7 @@
         const stim_dur  = 2000; /* milliseconds */
         const fix_dur = 200;
 
-        const num_ima_trials = 2; /*10th is the critical one */
+        const num_ima_trials = 1; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
 
 
@@ -36,9 +36,9 @@
         window.trl_num = 0;
         window.block_num = 0;
 
-        /*ESSENTIALS*/
+        /* ESSENTIALS */
 
-        /* fixation */
+        /* FIXATION */
         var fixation = {
           type: jsPsychHtmlKeyboardResponse,
           stimulus: '<div style="font-size:60px;">+</div>',
@@ -47,7 +47,7 @@
           data: {task: 'fixation'}
         };
 
-         /* update trial number */
+        /* UPDATE TRIAL NUMBER */
         var update_trial_number = {
             type: jsPsychCallFunction,
             func: function() { 
@@ -55,27 +55,69 @@
             }
         };
   
+
         /* TIMELINE */
-  
         var timeline = [];
 
-        /* WELCOME MESSAGE*/
-        
+
+        /* PRE-LOAD MEDIA */
+        var pre_load = {
+            type: jsPsychPreload,
+            auto_load: true, /* load all media based on timeline passed to jsPsych.run */
+            message: "Please wait while loading the experiment.",
+            show_progress_bar: true,
+        };
+        timeline.push(pre_load)
+
+
+        /* WELCOME MESSAGE */
         var welcome = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: "Welcome to the experiment. Press any key to begin."
         };
-
         timeline.push(welcome)
+        
+        
+        /*
 
-        var preload = {
-            type: jsPsychPreload,
-            stimulus: ["img/stim_1_vis_50.png", "img/stim_2_vis_50.png"]
-        };    
-        timeline.push(preload);
+        INFORMATION SHEET
+
+        var information_sheet = {
+            type: jsPsychExternalHtml,
+            url: "InformationSheet.html",
+            cont_btn: "Start",
+            execute_script: true
+        };
+
+        timeline.push(information_sheet);
+
+
+        CONSENT
+
+        var check_consent_function = function(elem) {
+            if (document.getElementById('consent_checkbox').checked) {
+                return true
+            }
+            else {
+                alert("If you wish to participate, must check the box next to the statement 'I agree to participate in this study'");
+                return false;
+            }
+            return false
+        };
+
+        var consent_form = {
+            type: jsPsychExternalHtml,
+            url: "ConsentForm.html",
+            cont_btn: "Start",
+            check_fn: check_consent_function
+        };
+
+        timeline.push(consent_form)
+
+        */
+
 
         /* INSTRUCTIONS */
-        
         var instructions = {
         type: jsPsychHtmlKeyboardResponse,
         stimulus: `
@@ -220,59 +262,42 @@
         var debrief_questions = {
             type: jsPsychSurveyHtmlForm,
             preamble: '<p> <strong> Demographics Questionnaire </strong> </p>',
-            html: '<p> The answer to these question will not affect your payment. </p> <p> What is your age? <input type="number" id="debrief_question_age" name="response_age" min="18" max="200" /></p> <p> Did you actually imagine the gratings when we asked you to? <input type="radio" id="debrief_question_imageryintent_yes" name="imageryintent" value="yes" /> <label for="debrief_question_imageryintent_yes">Yes</label> <input type="radio" id="debrief_question_imageryintent_no" name="imageryintent" value="no" /> <label for="debrief_question_imageryintent_no">No</label> </p> <p> Do you have any other comments? <input type="text" id="comments" name="comments" size="15" </p>',
+            html: `
+                <p> The answer to these question will not affect your payment. </p> 
+
+                <p> What is your age? 
+
+                    <input type="number" id="debrief_question_age" name="response_age" min="18" max="120" />
+
+                </p>
+
+                <p> Did you actually imagine the gratings when we asked you to? 
+
+                    <input type="radio" id="debrief_question_imageryintent_yes" name="imageryintent" value="yes" /> 
+                    <label for="debrief_question_imageryintent_yes">Yes</label> 
+                    
+                    <input type="radio" id="debrief_question_imageryintent_no" name="imageryintent" value="no" /> 
+                    <label for="debrief_question_imageryintent_no">No</label>
+
+                </p> 
+
+                <p> Do you have any other comments?
+
+                    <input type="text" id="comments" name="comments" size="25" />
+
+                </p>`,
+            button_label: 'Finish',
             autofocus: 'debrief_question_age',
         };
         timeline.push(debrief_questions);
 
-        
-        /*
-
-        INFORMATION SHEET
-
-        var information_sheet = {
-            type: jsPsychExternalHtml,
-            url: "InformationSheet.html",
-            cont_btn: "Start",
-            execute_script: true
-        };
-
-        timeline.push(information_sheet);
-
-
-        CONSENT
-
-        var check_consent_function = function(elem) {
-            if (document.getElementById('consent_checkbox').checked) {
-                return true
-            }
-            else {
-                alert("If you wish to participate, must check the box next to the statement 'I agree to participate in this study'");
-                return false;
-            }
-            return false
-        };
-
-        var consent_form = {
-            type: jsPsychExternalHtml,
-            url: "ConsentForm.html",
-            cont_btn: "Start",
-            check_fn: check_consent_function
-        };
-
-        timeline.push(consent_form)
-
-        */
-
 
         /* INIT JS PSYCH */
-        
         var jsPsych = initJsPsych({
             on_finish: function() {
                 jsPsych.data.displayData();
             }
         });
-
         jsPsych.run(timeline);
   
     </script>
