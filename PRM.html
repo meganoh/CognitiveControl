@@ -26,7 +26,7 @@
         const stim_dur  = 2000; /* milliseconds */
         const fix_dur = 200;
 
-        const num_ima_trials = 9; /*10th is the critical one */
+        const num_ima_trials = 2; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
 
 
@@ -196,10 +196,10 @@
             ` ,
             choices: ['No','Left tilted','Right tilted'],
             data: {
-                test_part: 'critical_trial', correct_response: 'Left tilted'
+                test_part: 'critical_trial', correct_response: 1 /*left tilted*/
             },
             on_finish: function(data){
-                data.correct = data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(data.correct_response);
+                data.correct = data.response === data.correct_response;
             }
         };
 
@@ -219,17 +219,16 @@
         /* DEBRIEF */
         var debrief_questions = {
             type: jsPsychSurveyHtmlForm,
-            questions: [
-                {prompt: "What is your age?", rows: 2, columns: 40},
-                {prompt: "The answer to this question will not affect your payment. " +
-                "Did you actually imagine the gratings when we asked you to?", rows: 2, columns: 40},
-                {prompt: "Do you have any other comments?", rows: 2, columns: 40},
-            ]
+            preamble: '<p> <strong> Demographics Questionnaire </strong> </p>',
+            html: '<p> The answer to these question will not affect your payment. </p> <p> What is your age? <input type="number" id="debrief_question_age" name="response_age" min="18" max="200" /></p> <p> Did you actually imagine the gratings when we asked you to? <input type="radio" id="debrief_question_imageryintent_yes" name="imageryintent" value="yes" /> <label for="debrief_question_imageryintent_yes">Yes</label> <input type="radio" id="debrief_question_imageryintent_no" name="imageryintent" value="no" /> <label for="debrief_question_imageryintent_no">No</label> </p> <p> Do you have any other comments? <input type="text" id="comments" name="comments" size="15" </p>',
+            autofocus: 'debrief_question_age',
         };
         timeline.push(debrief_questions);
 
         
-        /* INFORMATION SHEET */
+        /*
+
+        INFORMATION SHEET
 
         var information_sheet = {
             type: jsPsychExternalHtml,
@@ -241,7 +240,7 @@
         timeline.push(information_sheet);
 
 
-        /* CONSENT */
+        CONSENT
 
         var check_consent_function = function(elem) {
             if (document.getElementById('consent_checkbox').checked) {
@@ -263,6 +262,7 @@
 
         timeline.push(consent_form)
 
+        */
 
 
         /* INIT JS PSYCH */
