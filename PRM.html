@@ -11,6 +11,7 @@
         <script src="jspsych/dist/plugin-preload.js"></script>
         <script src="jspsych/dist/plugin-external-html.js"></script>
         <script src="jspsych/dist/plugin-survey-html-form.js"></script>
+        <script src="jspsych/dist/plugin-survey-likert.js"></script>
 
 
         <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
@@ -55,6 +56,13 @@
             }
         };
   
+        var confidence_scale = [
+            "1 (not at all confident)",
+            "2",
+            "3",
+            "4",
+            "5 (very confident)"
+            ];
 
         /* TIMELINE */
         var timeline = [];
@@ -228,34 +236,28 @@
         var critical_question = {
             type: jsPsychHtmlButtonResponse,
             stimulus: `
-            <p> On the last trial, was there a grating presented on the screen? </p>
-            <p> No, there was only noise on the screen, any grating I saw was my imagination [No]  </p>
-            <p> Yes, there was actually a left-tilted grating on the screen [Left tilted]  </p>
-            <p> Yes, there was actually a right-tilted grating on the screen [Right tilted]  </p>
-            <img src='img/critical_trial.png' width=600 ></img>
-            </div> 
-            <p> Click on the button corresponding to your answer to continue  </p>
-            ` ,
-            choices: ['No','Left tilted','Right tilted'],
-            data: {
-                test_part: 'critical_trial', correct_response: 1 /*left tilted*/
-            },
+                <p> On the last trial, was there a grating presented on the screen? </p>
+                <p> [No] No, there was only noise on the screen, any grating I saw was my imagination. </p>
+                <p> [Left-Tilted] Yes, there was a real left-tilted grating on the screen. </p>
+                <p> [Right-Tilted] Yes, there was a real right-tilted grating on the screen. </p>
+                <img src='img/critical_trial.png' width=600 ></img>`,
+            choices: ['No','Left-Tilted','Right-Tilted'],
+            prompt: "<p> Select the button corresponding to your answer. </p>",
+            data: {test_part: 'critical_trial', correct_response: 1 /*left tilted*/},
             on_finish: function(data){
                 data.correct = data.response === data.correct_response;
-            }
+            },
         };
 
-        var confidence_judgement = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: "How confident are you that you answered the last question correctly? <br>",
-            prompt:
-            "<br> Not confident at all [1] - Very confident, completely sure [5]" ,
-            choices: ['1','2','3','4','5'],
-            data: {
-                test_part: 'confidence'
-            }
-        }
-        timeline.push(fixation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement);
+        var confidence_judgement_crit = {
+            type: jsPsychSurveyLikert,
+            preamble: '<p> <strong> Confidence Judgement </strong> </p>',
+            questions: [
+                {prompt: "How confident are you that you answered the last question correctly?", name: "confidence_crit", labels: confidence_scale, required: true},
+            ],
+            data: {test_part: 'confidence'},
+        };
+        timeline.push(fixation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
 
 
         /* DEBRIEF */
