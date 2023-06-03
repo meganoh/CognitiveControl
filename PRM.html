@@ -30,6 +30,8 @@
         const num_ima_trials = 1; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
 
+        const CONDITION = 1 /*rotation - high cognitive control condition*/
+
 
         /* GLOBAL VARIABLES */
         window.vis_level = 38;
@@ -227,6 +229,15 @@
 
 
         /* CRITICAL TRIAL */
+        var rotate_instruction = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+            <p> In this trial, please rotate the grating by 60° </p>
+            <p> Please press [space] when you are ready </p>
+            `,
+            choices: [' ']
+        };
+        
         var show_dynamic_stimulus= {
             type: jsPsychAnimation,
             stimuli: function() {
@@ -264,7 +275,8 @@
             scale_width: 500,
             data: {test_part: 'confidence judgement'},
         };
-        timeline.push(fixation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
+
+        timeline.push(rotate_instruction, fixation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
 
 
         /* DEBRIEF */
