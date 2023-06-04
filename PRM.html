@@ -12,6 +12,7 @@
         <script src="jspsych/dist/plugin-external-html.js"></script>
         <script src="jspsych/dist/plugin-survey-html-form.js"></script>
         <script src="jspsych/dist/plugin-survey-likert.js"></script>
+        <script src="jspsych/dist/plugin-reconstruction.js"></script>
 
 
         <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
@@ -27,7 +28,7 @@
         const stim_dur  = 2000; /* milliseconds */
         const fix_dur = 200;
 
-        const num_ima_trials = 1; /*10th is the critical one */
+        const num_ima_trials = 9; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
 
         const CONDITION = 1 /*rotation - high cognitive control condition*/
@@ -311,6 +312,52 @@
             autofocus: 'debrief_question_age',
         };
         timeline.push(debrief_questions);
+
+
+        /* IMAGE ROTATION */
+        var test_instr = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+                <p> This is a test to see whether you can rotate this image. </p>
+                <img src='img/stim_2_vis_50.png' width=600 ></img>
+                <p>Press [space] to continue </p>
+            `,
+            choices: [' '],
+        };
+        timeline.push(test_instr);
+
+
+        var testfunction = function(angle_change) {
+            var angle = 0 + Math.floor(angle_change*360);
+            var angle_add = function(angle) {
+                angle++
+                return angle
+            };
+            var html_rotation = `
+                <style> 
+                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                </style> 
+                <p> This is where an image should appear. </p>
+                <p> Press the arrow keys to rotate the image. </p>
+                <img src='img/stim_2_vis_50.png' class=rotateimage width=600></img>
+                <br>
+                <input type="button" class="jspsych-btn" onclick="alert(` + angle_add(angle) + `)" value="Left">
+                <input type="button" class="jspsych-btn" value="Right">
+                <p> the angle is ` + angle + `
+                `;
+            return html_rotation;
+        };
+
+        var rotation_control = {
+            type: jsPsychReconstruction,
+            stim_function: testfunction,
+            key_increase: 'ArrowRight',
+            key_decrease: 'ArrowLeft',
+            step_size: 0.0029,
+            starting_value: 0,
+        };
+        timeline.push(rotation_control)
+
 
 
         /* INIT JS PSYCH */
