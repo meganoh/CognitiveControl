@@ -28,7 +28,7 @@
         const stim_dur  = 2000; /* milliseconds */
         const fix_dur = 200;
 
-        const num_ima_trials = 9; /*10th is the critical one */
+        const num_ima_trials = 1; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
 
         const CONDITION = 1 /*rotation - high cognitive control condition*/
@@ -319,7 +319,7 @@
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
                 <p> This is a test to see whether you can rotate this image. </p>
-                <img src='img/stim_2_vis_50.png' width=600 ></img>
+                <img src='img/stim_2_vis_50.png' width=200 ></img>
                 <p>Press [space] to continue </p>
             `,
             choices: [' '],
@@ -339,7 +339,7 @@
                 </style> 
                 <p> This is where an image should appear. </p>
                 <p> Press the arrow keys to rotate the image. </p>
-                <img src='img/stim_2_vis_50.png' class=rotateimage width=600></img>
+                <img src='img/stim_2_vis_50.png' class=rotateimage width=200></img>
                 <br>
                 <input type="button" class="jspsych-btn" onclick="alert(` + angle_add(angle) + `)" value="Left">
                 <input type="button" class="jspsych-btn" value="Right">
