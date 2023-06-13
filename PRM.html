@@ -17,7 +17,7 @@
         <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
     </head>
     <body></body>
-
+    
     To do list:
         1. separate generation phase from imagination phase (Megan)
         2. include practice trials (Felix)
@@ -48,10 +48,14 @@
         /* ESSENTIALS */
 
         /* FIXATION */
-        var fixation = {
+        var fixation_generation = {
           type: jsPsychHtmlKeyboardResponse,
-          stimulus: '<div style="font-size:60px;">+</div>',
-          choices: "NO_KEYS",
+          stimulus: `
+                <p> Press space when you have generated and rotated the image</p>
+                <p> </p>
+                    
+                <div style="font-size:60px;">+</div>`,
+          choices: [' '],
           trial_duration: fix_dur,
           data: {task: 'fixation'}
         };
@@ -227,7 +231,7 @@
         };
 
         var ima_procedure = {
-            timeline: [fixation, show_dynamic_noise, ima_response],
+            timeline: [fixation_generation, show_dynamic_noise, ima_response],
             repetitions: num_ima_trials
         };
         timeline.push(ima_procedure);
@@ -243,10 +247,11 @@
             `,
             choices: [' ']
         };
-        
+
         var show_dynamic_stimulus= {
             type: jsPsychAnimation,
-            stimuli: function() {
+            stimuli: '<p> Please maintain the image of the grating in your mind </p>',
+            function() {
                 arr = makeStimSequence(1,window.vis_level,num_steps,0);
                 jsPsych.pluginAPI.preloadImages(arr)
                 return arr
@@ -282,7 +287,7 @@
             data: {test_part: 'confidence judgement'},
         };
 
-        timeline.push(rotate_instruction, fixation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
+        timeline.push(rotate_instruction, fixation_generation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
 
 
         /* DEBRIEF */
