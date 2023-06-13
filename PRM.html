@@ -20,10 +20,15 @@
     <body></body>
     
     To do list:
-        
-        3. include rotation question - after critical question (Felix)
+        1. clean-up code and pass practice to a function
         5. Add headings for trials (Felix)
         6. change stimuli background (matlab - megan)
+
+    Questions:
+    1. All buttons?
+    2. How should we provide feedback? Should we allow participants to proceed to the next trial?
+    3. Is the order correct?
+    4. 
     
     <script>
   
@@ -112,13 +117,19 @@
         };
         timeline.push(pre_load)
 
+        var pre_load_extra = {
+            type: jsPsychPreload,
+            images: ['img/stim15.png', 'img/stim75.png', 'img/stim135.png', 'img/stim_response_correct.png', 'img/stim_response_incorrect.png'],
+        };
+        timeline.push(pre_load_extra);
+
 
         /* WELCOME MESSAGE */
         var welcome = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: "Welcome to the experiment. Press any key to begin."
         };
-        timeline.push(welcome)
+        timeline.push(welcome);
         
         
         /*
@@ -186,7 +197,7 @@
             <img src='img/stim15.png' width=200 ></img>`,
             prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
             choices: [' '],
-        }
+        };
 
         var practice_rotation_function = function(angle_change) {
             var angle = 0 + Math.round(angle_change*360);
@@ -200,11 +211,9 @@
                 <p> Rotate the grating to 90°. </p>
                 <img src='img/stim15.png' class=rotateimage width=200></img>
                 <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
-                <br>
-                
                 <p> the angle is ` + angle + ``;
             return html_rotation;
-        }
+        };
 
         var practice_rotation = {
             type: jsPsychReconstruction,
@@ -221,7 +230,7 @@
                     data.response_correct = false;
                 }
             }
-        }
+        };
 
         var practice_feedback = {
             type: jsPsychHtmlKeyboardResponse,
@@ -243,7 +252,7 @@
             },
             prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
             choices: [' '],
-        }
+        };
         timeline.push(practice_instructions, practice_rotation, practice_feedback);
 
         var practice_instructions = {
@@ -255,7 +264,7 @@
             <img src='img/stim15.png' width=200 ></img>`,
             prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
             choices: [' '],
-        }
+        };
 
         var practice_rotation_function = function(angle_change) {
             var angle = 0 + Math.round(angle_change*360);
@@ -269,11 +278,9 @@
                 <p> Rotate the grating to 180°. </p>
                 <img src='img/stim15.png' class=rotateimage width=200></img>
                 <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
-                <br>
-                
                 <p> the angle is ` + angle + ``;
             return html_rotation;
-        }
+        };
 
         var practice_rotation = {
             type: jsPsychReconstruction,
@@ -290,7 +297,7 @@
                     data.response_correct = false;
                 }
             }
-        }
+        };
 
         var practice_feedback = {
             type: jsPsychHtmlKeyboardResponse,
@@ -312,7 +319,7 @@
             },
             prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
             choices: [' '],
-        }
+        };
         timeline.push(practice_instructions, practice_rotation, practice_feedback);
          
 
@@ -442,6 +449,33 @@
         };
 
         timeline.push(rotate_instruction, fixation_generation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
+        
+        /* ROTATION AFTER CRITICAL QUESTION */
+        var trial_rotation_function = function(angle_change) {
+            var angle = 0 + Math.round(angle_change*360);
+            var html_rotation = `
+                <style> 
+                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                </style>
+
+                <p> <strong> Final Trial </strong> </p>
+                <br>
+                <p> Rotate the grating to your imagined orientation. </p>
+                <img src='img/stim75.png' class=rotateimage width=200></img>
+                <p> Press the <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> key to rotate. </p>
+                <br>`;
+            return html_rotation;
+        };
+
+        var practice_rotation = {
+            type: jsPsychReconstruction,
+            stim_function: trial_rotation_function,
+            key_increase: 'ArrowRight',
+            key_decrease: 'ArrowLeft',
+            step_size: 1/360,
+            starting_value: 0,
+            data: {test_part: 'trial_rotation'},
+        };
 
 
         /* DEBRIEF */
