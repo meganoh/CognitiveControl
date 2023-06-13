@@ -19,7 +19,6 @@
     <body></body>
     
     To do list:
-        1. separate generation phase from imagination phase (Megan)
         2. include practice trials (Felix)
         3. include rotation question - after critical question (Felix)
         5. Add headings for trials (Felix)
@@ -47,11 +46,11 @@
 
         /* ESSENTIALS */
 
-        /* FIXATION */
+        /* FIXATION - need to change instructions if participants need to rotate*/
         var fixation_generation = {
           type: jsPsychHtmlKeyboardResponse,
           stimulus: `
-                <p> Press space when you have generated and rotated the image</p>
+                <p> Press space when you have generated the image</p>
                 <p> </p>
                     
                 <div style="font-size:60px;">+</div>`,
@@ -250,7 +249,7 @@
 
         var show_dynamic_stimulus= {
             type: jsPsychAnimation,
-            stimuli: '<p> Please maintain the image of the grating in your mind </p>',
+            stimuli:
             function() {
                 arr = makeStimSequence(1,window.vis_level,num_steps,0);
                 jsPsych.pluginAPI.preloadImages(arr)
