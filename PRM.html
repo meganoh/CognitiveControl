@@ -12,6 +12,7 @@
         <script src="jspsych/dist/plugin-external-html.js"></script>
         <script src="jspsych/dist/plugin-survey-html-form.js"></script>
         <script src="jspsych/dist/plugin-survey-likert.js"></script>
+        <script src="jspsych/dist/plugin-reconstruction.js"></script>
 
 
         <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
@@ -19,7 +20,7 @@
     <body></body>
     
     To do list:
-        2. include practice trials (Felix)
+        
         3. include rotation question - after critical question (Felix)
         5. Add headings for trials (Felix)
         6. change stimuli background (matlab - megan)
@@ -45,6 +46,19 @@
         window.block_num = 0;
 
         /* ESSENTIALS */
+
+        /* FIXATION - need to change instructions if participants need to rotate*/
+        var fixation_generation = {
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `
+                <p> Press space when you have generated the image</p>
+                <p> </p>
+                    
+                <div style="font-size:60px;">+</div>`,
+          choices: [' '],
+          trial_duration: fix_dur,
+          data: {task: 'fixation'}
+        };
 
         /* FIXATION - need to change instructions if participants need to rotate*/
         var fixation_generation = {
@@ -162,6 +176,147 @@
         timeline.push(instructions);
 
         
+        /* PRACTICE TRIALS */
+        var practice_instructions = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+            <p> <strong> Practice Trials </strong> </p>
+            <br>
+            <p> In this experiment you will occasionally be asked to rotate a </p>
+            <img src='img/stim15.png' width=200 ></img>`,
+            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            choices: [' '],
+        }
+
+        var practice_rotation_function = function(angle_change) {
+            var angle = 0 + Math.round(angle_change*360);
+            var html_rotation = `
+                <style> 
+                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                </style>
+
+                <p> <strong> Practice Trials </strong> </p>
+                <br>
+                <p> Rotate the grating to 90°. </p>
+                <img src='img/stim15.png' class=rotateimage width=200></img>
+                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
+                <br>
+                
+                <p> the angle is ` + angle + ``;
+            return html_rotation;
+        }
+
+        var practice_rotation = {
+            type: jsPsychReconstruction,
+            stim_function: practice_rotation_function,
+            key_increase: 'ArrowRight',
+            key_decrease: 'ArrowLeft',
+            step_size: 1/360,
+            starting_value: 0,
+            data: {test_part: 'practice_rotation', correct_response: 90},
+            on_finish: function(data) {
+                if(Math.abs(data.final_value - (data.correct_response/360)) < 0.1) {
+                    data.response_correct = true;
+                } else {
+                    data.response_correct = false;
+                }
+            }
+        }
+
+        var practice_feedback = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                var practice_response = jsPsych.data.getLastTrialData().select('response_correct').values;
+                if(practice_response === true) {
+                    return `
+                        <p> <strong> Practice Trials </strong> </p>
+                        <br>
+                        <p> Your response was correct. </p>
+                        <img src='img/stim_response_correct.png' width=200></img>`;
+                } else {
+                    return `
+                        <p> <strong> Practice Trials </strong> </p>
+                        <br>
+                        <p> Your response was incorrect. </p>
+                        <img src='img/stim_response_incorrect.png' width=200></img>`;
+                }
+            },
+            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            choices: [' '],
+        }
+        timeline.push(practice_instructions, practice_rotation, practice_feedback);
+
+        var practice_instructions = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+            <p> <strong> Practice Trials </strong> </p>
+            <br>
+            <p> In this experiment you will occasionally be asked to rotate a </p>
+            <img src='img/stim15.png' width=200 ></img>`,
+            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            choices: [' '],
+        }
+
+        var practice_rotation_function = function(angle_change) {
+            var angle = 0 + Math.round(angle_change*360);
+            var html_rotation = `
+                <style> 
+                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                </style>
+
+                <p> <strong> Practice Trials </strong> </p>
+                <br>
+                <p> Rotate the grating to 180°. </p>
+                <img src='img/stim15.png' class=rotateimage width=200></img>
+                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
+                <br>
+                
+                <p> the angle is ` + angle + ``;
+            return html_rotation;
+        }
+
+        var practice_rotation = {
+            type: jsPsychReconstruction,
+            stim_function: practice_rotation_function,
+            key_increase: 'ArrowRight',
+            key_decrease: 'ArrowLeft',
+            step_size: 1/360,
+            starting_value: 0,
+            data: {test_part: 'practice_rotation', correct_response: 180},
+            on_finish: function(data) {
+                if(Math.abs(data.final_value - (data.correct_response/360)) < 0.1) {
+                    data.response_correct = true;
+                } else {
+                    data.response_correct = false;
+                }
+            }
+        }
+
+        var practice_feedback = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                var practice_response = jsPsych.data.getLastTrialData().select('response_correct').values;
+                if(practice_response === true) {
+                    return `
+                        <p> <strong> Practice Trials </strong> </p>
+                        <br>
+                        <p> Your response was correct. </p>
+                        <img src='img/stim_response_correct.png' width=200></img>`;
+                } else {
+                    return `
+                        <p> <strong> Practice Trials </strong> </p>
+                        <br>
+                        <p> Your response was incorrect. </p>
+                        <img src='img/stim_response_incorrect.png' width=200></img>`;
+                }
+            },
+            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            choices: [' '],
+        }
+        timeline.push(practice_instructions, practice_rotation, practice_feedback);
+         
+
+
         /* IMAGERY INSTRUCTIONS */
         var instructions_imagery = {
             type: jsPsychHtmlKeyboardResponse,
@@ -297,15 +452,19 @@
                 <p> The answer to these question will not affect your payment. </p> 
 
                 <p> What is your age? 
-                    <input type="number" id="debrief_question_age" name="age" min="18" max="120" required />
+
+                    <input type="number" id="debrief_question_age" name="age" min="18" max="120" required/>
+
                 </p>
 
                 <p> Did you actually imagine the gratings when we asked you to? 
+
                     <input type="radio" id="debrief_question_imageryintent_yes" name="imageryintent" value="yes" required/> 
                     <label for="debrief_question_imageryintent_yes">Yes</label> 
                     
                     <input type="radio" id="debrief_question_imageryintent_no" name="imageryintent" value="no" required/> 
                     <label for="debrief_question_imageryintent_no">No</label>
+
                 </p> 
 
                 <p> Do you have any other comments?
