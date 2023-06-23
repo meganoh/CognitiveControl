@@ -23,13 +23,12 @@
     1. Information
     2. Consent 
     3. Rotation practice 
-        a. Leftwards & rightwards 
-        b. One round with the angle information, another without angle feedback 
-        c. Repeat until correct 
-        d. Original orientation - two directions, one to the left and one to the right 
+        a. remove text showing angle for no text practice
+        b. turn percentages into angles in data column
+        a. 
         e. 15 & 135 degrees (Make sure they’re not 90 degrees apart)
         f. Same spatial frequency as the other studies 
-        g. Margin of error for correctness +- 10 degrees (for trials without specific angle information; for trials with information it has to be exact)
+        g. check it is +/-10 over multiple trials to make sure
     4. Imagery practice 
         a. Look at her paper 
         b. No rotation, just imagery and indicating vividness during noise 
@@ -55,19 +54,6 @@
     8. Include discrimination task (as a control)
     9. Debrief 
     
-    To do list:
-        1. clean-up code and pass practice to a function
-        2. Add headings for trials (Felix)
-        3. change background to grey 
-        4. change stimuli angles 
-
-
-    Questions:
-    1. All buttons?
-    2. How should we provide feedback? Should we allow participants to proceed to the next trial?
-    3. Is the order correct?
-    4. 
-    
     <script>
   
         /* VARIABLES */
@@ -81,6 +67,8 @@
 
         const CONDITION = 1 /*rotation - high cognitive control condition*/
 
+        const practice_angle_left = -90
+        const practice_angle_right = 180
 
         /* GLOBAL VARIABLES */
         window.vis_level = 38;
@@ -90,18 +78,8 @@
 
         /* ESSENTIALS */
 
-        /* FIXATION - need to change instructions if participants need to rotate*/
-        var fixation_generation = {
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `
-                <p> Press space when you have generated the image</p>
-                <p> </p>
-                    
-                <div style="font-size:60px;">+</div>`,
-          choices: [' '],
-          trial_duration: fix_dur,
-          data: {task: 'fixation'}
-        };
+        /* TIMELINE */
+        var timeline = [];
 
         /* FIXATION - need to change instructions if participants need to rotate*/
         var fixation_generation = {
@@ -116,14 +94,20 @@
           data: {task: 'fixation'}
         };
 
-        /* UPDATE TRIAL NUMBER */
-        var update_trial_number = {
-            type: jsPsychCallFunction,
-            func: function() { 
-                window.trl_num++;
-            }
+        /* FIXATION - need to change instructions if participants need to rotate*/
+        var fixation_generation = {
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `
+                <p> Press space when you have generated the image</p>
+                <p> </p>
+                    
+                <div style="font-size:60px;">+</div>`,
+          choices: [' '],
+          trial_duration: fix_dur,
+          data: {task: 'fixation'}
         };
-        
+
+
         /* RESPONSE SCALES */
         var vividness_scale = [
             "1 (not at all vivid)",
@@ -142,8 +126,53 @@
             ];
 
 
-        /* TIMELINE */
-        var timeline = [];
+        /* FUNCTIONS */
+        /* FUNCTION FOR ROTATION STIMULUS */
+        var create_practice_rotation_function = function(preferred_angle) {
+            var practice_rotation_function = function(angle_change) {
+            var angle = 0 + Math.round(angle_change*720) - 360;
+            var html_rotation = `
+                <style> 
+                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                </style>
+
+                <p> <strong> Practice Trials </strong> </p>
+                <br>
+                <p> Please rotate this grating to `+ preferred_angle + ` </p>
+                <img src='img/stim15.png' class=rotateimage width=200></img>
+                <p> The current angle is ` + angle + `.
+                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>`;
+            return html_rotation;
+            };
+            return practice_rotation_function;
+        };
+
+        /* FUNCTION FOR PRACTICE FEEDBACK */
+        var practice_feedback = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                var practice_response = jsPsych.data.getLastTrialData().select('response_correct').values;
+                if(practice_response == 'true') {
+                    return `
+                        <p> <strong> Practice Trials </strong> </p>
+                        <br>
+                        <p> Your response was correct. </p>
+                        <img src='img/stim_response_correct.png' width=200></img>`;
+                } else {
+                    return `
+                        <p> <strong> Practice Trials </strong> </p>
+                        <br>
+                        <p> Your response was incorrect. </p>
+                        <img src='img/stim_response_incorrect.png' width=200></img>`;
+                }
+            },
+            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            choices: [' '],
+        };
+        
+        
+
+        /* START */
 
 
         /* PRE-LOAD MEDIA */
@@ -155,9 +184,13 @@
         };
         timeline.push(pre_load)
 
+
+        var extra_images = ['img/stim15.png', 'img/stim75.png', 'img/stim135.png', 'img/stim_response_correct.png', 'img/stim_response_incorrect.png'];
         var pre_load_extra = {
             type: jsPsychPreload,
-            images: ['img/stim15.png', 'img/stim75.png', 'img/stim135.png', 'img/stim_response_correct.png', 'img/stim_response_incorrect.png'],
+            images: ['img/stim15.png'],
+            message: "Loading all the extras.",
+            show_progress_bar: true,
         };
         timeline.push(pre_load_extra);
 
@@ -208,7 +241,7 @@
 
         */
 
-        /* INSTRUCTIONS */
+        /* GENERAL INSTRUCTIONS */
         var instructions = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
@@ -223,143 +256,164 @@
             choices: [' '],
         };
         timeline.push(instructions);
-
         
-        /* PRACTICE TRIALS */
+
+        /* ROTATION PRACTICE INSTRUCTIONS */
         var practice_instructions = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
             <p> <strong> Practice Trials </strong> </p>
             <br>
-            <p> In this experiment you will occasionally be asked to rotate a </p>
+            <p> Throughout the experiment you will be asked to rotate gratings. </p>
             <img src='img/stim15.png' width=200 ></img>`,
-            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            prompt: '<p> Press <strong> SPACE </strong> to continue. </p>',
             choices: [' '],
         };
+        timeline.push(practice_instructions);
 
-        var practice_rotation_function = function(angle_change) {
-            var angle = 0 + Math.round(angle_change*360);
-            var html_rotation = `
-                <style> 
-                    .rotateimage {transform: rotate(` + angle + `deg);} 
-                </style>
 
-                <p> <strong> Practice Trials </strong> </p>
-                <br>
-                <p> Rotate the grating to 90°. </p>
-                <img src='img/stim15.png' class=rotateimage width=200></img>
-                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
-                <p> the angle is ` + angle + ``;
-            return html_rotation;
-        };
-
+        /* PRACTICE ROTATION WITH ANGEL IN TEXT */
+        /* PRACTICE TRIAL ROTATION LEFT */
         var practice_rotation = {
             type: jsPsychReconstruction,
-            stim_function: practice_rotation_function,
+            stim_function: create_practice_rotation_function(practice_angle_left),
             key_increase: 'ArrowRight',
             key_decrease: 'ArrowLeft',
-            step_size: 1/360,
-            starting_value: 0,
-            data: {test_part: 'practice_rotation', correct_response: 90},
+            step_size: 1/720,
+            starting_value: 0.5,
+            data: {test_part: 'practice_rotation', correct_response: practice_angle_left},
             on_finish: function(data) {
-                if(Math.abs(data.final_value - (data.correct_response/360)) < 0.1) {
-                    data.response_correct = true;
-                } else {
-                    data.response_correct = false;
-                }
+                data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
+                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001;
             }
         };
 
-        var practice_feedback = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: function() {
-                var practice_response = jsPsych.data.getLastTrialData().select('response_correct').values;
-                if(practice_response === true) {
-                    return `
-                        <p> <strong> Practice Trials </strong> </p>
-                        <br>
-                        <p> Your response was correct. </p>
-                        <img src='img/stim_response_correct.png' width=200></img>`;
+        var feedback_loop = {
+            timeline: [practice_rotation, practice_feedback],
+            loop_function: function(data) {
+                var list_of_responses = jsPsych.data.get().select('response_correct').values;
+                var last_response = list_of_responses[list_of_responses.length - 1];
+                console.log(list_of_responses);
+                console.log(last_response);
+                if(last_response) {
+                    return false;
                 } else {
-                    return `
-                        <p> <strong> Practice Trials </strong> </p>
-                        <br>
-                        <p> Your response was incorrect. </p>
-                        <img src='img/stim_response_incorrect.png' width=200></img>`;
+                    return true;
                 }
-            },
-            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
-            choices: [' '],
+            }
         };
-        timeline.push(practice_instructions, practice_rotation, practice_feedback);
+        timeline.push(feedback_loop);
 
+        /* PRACTICE TRIAL ROTATION RIGHT */
+        var practice_rotation = {
+            type: jsPsychReconstruction,
+            stim_function: create_practice_rotation_function(practice_angle_right),
+            key_increase: 'ArrowRight',
+            key_decrease: 'ArrowLeft',
+            step_size: 1/720,
+            starting_value: 0.5,
+            data: {test_part: 'practice_rotation', correct_response: practice_angle_right},
+            on_finish: function(data) {
+                data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
+                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001;
+            }
+        };
+        
+        var feedback_loop = {
+            timeline: [practice_rotation, practice_feedback],
+            loop_function: function(data) {
+                var list_of_responses = jsPsych.data.get().select('response_correct').values;
+                var last_response = list_of_responses[list_of_responses.length - 1];
+                console.log(list_of_responses);
+                console.log(last_response);
+                if(last_response) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        };
+        timeline.push(feedback_loop);
+        
+
+        /* ROTATION PRACTICE INSTRUCTIONS */
         var practice_instructions = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
             <p> <strong> Practice Trials </strong> </p>
             <br>
-            <p> In this experiment you will occasionally be asked to rotate a </p>
+            <p> You will no longer see the current angel. This may be more difficult but try your best. </p>
             <img src='img/stim15.png' width=200 ></img>`,
-            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            prompt: '<p> Press <strong> SPACE </strong> to continue. </p>',
             choices: [' '],
         };
+        timeline.push(practice_instructions);
 
-        var practice_rotation_function = function(angle_change) {
-            var angle = 0 + Math.round(angle_change*360);
-            var html_rotation = `
-                <style> 
-                    .rotateimage {transform: rotate(` + angle + `deg);} 
-                </style>
-
-                <p> <strong> Practice Trials </strong> </p>
-                <br>
-                <p> Rotate the grating to 180°. </p>
-                <img src='img/stim15.png' class=rotateimage width=200></img>
-                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
-                <p> the angle is ` + angle + ``;
-            return html_rotation;
-        };
-
+        /* PRACTICE ROTATION NO TEXT BUT ERROR MARGIN */
+        /* PRACTICE TRIAL ROTATION LEFT */
         var practice_rotation = {
             type: jsPsychReconstruction,
-            stim_function: practice_rotation_function,
+            stim_function: create_practice_rotation_function(practice_angle_left),
             key_increase: 'ArrowRight',
             key_decrease: 'ArrowLeft',
-            step_size: 1/360,
-            starting_value: 0,
-            data: {test_part: 'practice_rotation', correct_response: 180},
+            step_size: 1/720,
+            starting_value: 0.5,
+            data: {test_part: 'practice_rotation', correct_response: practice_angle_left},
             on_finish: function(data) {
-                if(Math.abs(data.final_value - (data.correct_response/360)) < 0.1) {
-                    data.response_correct = true;
-                } else {
-                    data.response_correct = false;
-                }
+                data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
+                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001 + 0.05;
             }
         };
 
-        var practice_feedback = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: function() {
-                var practice_response = jsPsych.data.getLastTrialData().select('response_correct').values;
-                if(practice_response === true) {
-                    return `
-                        <p> <strong> Practice Trials </strong> </p>
-                        <br>
-                        <p> Your response was correct. </p>
-                        <img src='img/stim_response_correct.png' width=200></img>`;
+        var feedback_loop = {
+            timeline: [practice_rotation, practice_feedback],
+            loop_function: function(data) {
+                var list_of_responses = jsPsych.data.get().select('response_correct').values;
+                var last_response = list_of_responses[list_of_responses.length - 1];
+                console.log(list_of_responses);
+                console.log(last_response);
+                if(last_response) {
+                    return false;
                 } else {
-                    return `
-                        <p> <strong> Practice Trials </strong> </p>
-                        <br>
-                        <p> Your response was incorrect. </p>
-                        <img src='img/stim_response_incorrect.png' width=200></img>`;
+                    return true;
                 }
-            },
-            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
-            choices: [' '],
+            }
         };
-        timeline.push(practice_instructions, practice_rotation, practice_feedback);
-         
+        timeline.push(feedback_loop);
+
+        /* PRACTICE TRIAL ROTATION RIGHT */
+        var practice_rotation = {
+            type: jsPsychReconstruction,
+            stim_function: create_practice_rotation_function(practice_angle_right),
+            key_increase: 'ArrowRight',
+            key_decrease: 'ArrowLeft',
+            step_size: 1/720,
+            starting_value: 0.5,
+            data: {test_part: 'practice_rotation', correct_response: practice_angle_right},
+            on_finish: function(data) {
+                data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
+                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001 + 0.05;
+            }
+        };
+        
+        var feedback_loop = {
+            timeline: [practice_rotation, practice_feedback],
+            loop_function: function(data) {
+                var list_of_responses = jsPsych.data.get().select('response_correct').values;
+                var last_response = list_of_responses[list_of_responses.length - 1];
+                console.log(list_of_responses);
+                console.log(last_response);
+                if(last_response) {
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        };
+        timeline.push(feedback_loop);
+
+        /* PRACTICE TRIAL IMAGERY */
+
 
 
         /* IMAGERY INSTRUCTIONS */
