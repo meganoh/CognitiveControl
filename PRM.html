@@ -28,6 +28,7 @@
         a. remove text showing angle for no text practice
         b. turn percentages into angles in data column
         a. include percentage as setting
+
         e. 15 & 135 degrees (Make sure they’re not 90 degrees apart)
         f. Same spatial frequency as the other studies 
         g. check it is +/-10 over multiple trials to make sure
@@ -415,36 +416,6 @@
         };
         timeline.push(feedback_loop);
 
-        /* PRACTICE TRIAL IMAGERY */
-
-
-
-        /* IMAGERY INSTRUCTIONS */
-        var instructions_imagery = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: function() {
-                if (window.stim_id == 0) {
-                    var stim_instr = "a left tilted grating";
-                    var stim_pic = 'img/stim_1_vis_50.png';
-                } else if (window.stim_id == 1) {
-                    var stim_instr = "a right tilted grating";
-                    var stim_pic = 'img/stim_2_vis_50.png';
-                }
-                return `
-                    <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented </p> 
-                    <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
-                    <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
-                    <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
-                    <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
-                    <img src=` + stim_pic + ` width=200 ></img>
-                    <p>Press [space] to continue </p>` 
-            },
-            choices: [' '],
-            post_trial_gap: 500, 
-        }
-        timeline.push(instructions_imagery);
-
-
         /* IMAGERY PROCEDURE */
         function makeStimSequence(startValue, stopValue,cardinality,stim) {
             var arr = [];
@@ -485,6 +456,96 @@
             scale_width: 500,
             data: {test_part: 'vividness judgement'},
         };
+
+        /* IMAGERY PRACTICE*/
+        var instructions_imageryPractice = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                if (window.stim_id == 0) {
+                    var stim_instr = "a left tilted grating";
+                    var stim_pic = 'img/stim_1_vis_50.png';
+                } else if (window.stim_id == 1) {
+                    var stim_instr = "a right tilted grating";
+                    var stim_pic = 'img/stim_2_vis_50.png';
+                }
+                return `
+                    <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented </p> 
+                    <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
+                    <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
+                    <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
+                    <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
+                    <img src=` + stim_pic + ` width=200 ></img>
+                    <p>Press [space] to continue </p>` 
+            },
+            choices: [' '],
+            post_trial_gap: 500, 
+        }
+        timeline.push(instructions_imageryPractice);
+
+        var ima_practice = {
+            timeline: [fixation_generation, show_dynamic_noise, ima_response],
+            repetitions: 3
+        };
+        timeline.push(ima_practice);
+
+        /* IMAGERY + ROTATION PRACTICE*/
+        var instructions_imageryRotationPractice = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                if (window.stim_id == 0) {
+                    var stim_instr = "a left tilted grating";
+                    var stim_pic = 'img/stim_1_vis_50.png';
+                } else if (window.stim_id == 1) {
+                    var stim_instr = "a right tilted grating";
+                    var stim_pic = 'img/stim_2_vis_50.png';
+                }
+                return `
+                    <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented </p> 
+                    <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
+                    <p> Then, rotate the image by *INSERT DEGREES HERE*. </p>
+                    <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
+                    <p> After each trial, you will be asked to rate the vividness of your imagery then indicate your imagined image. </p> 
+                    <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
+                    <img src=` + stim_pic + ` width=200 ></img>
+                    <p>Press [space] to continue </p>` 
+            },
+            choices: [' '],
+            post_trial_gap: 500, 
+        }
+        timeline.push(instructions_imageryRotationPractice);
+
+        var imaRot_practice = {
+            timeline: [fixation_generation, show_dynamic_noise, ima_response],
+            repetitions: 3
+        };
+        timeline.push(ima_practice);
+
+        /* 9 + 1 TRIALS */
+        /* INSTRUCTIONS */
+        var instructions_imagery = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                if (window.stim_id == 0) {
+                    var stim_instr = "a left tilted grating";
+                    var stim_pic = 'img/stim_1_vis_50.png';
+                } else if (window.stim_id == 1) {
+                    var stim_instr = "a right tilted grating";
+                    var stim_pic = 'img/stim_2_vis_50.png';
+                }
+                return `
+                    <p> Now, we'll do a combination of everything we've just practiced. Let's recap: </p> 
+                    <p> First,imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
+                    <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
+                    <p> On some trials, you will be asked to rotate the image to a 90 or 180 degrees. </p> 
+                    <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
+                    <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
+                    <img src=` + stim_pic + ` width=200 ></img>
+                    <p>Press [space] to continue </p>` 
+            },
+            choices: [' '],
+            post_trial_gap: 500, 
+        }
+        timeline.push(instructions_imagery);
 
         var ima_procedure = {
             timeline: [fixation_generation, show_dynamic_noise, ima_response],
