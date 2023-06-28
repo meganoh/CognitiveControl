@@ -13,7 +13,7 @@
         <script src="jspsych/dist/plugin-survey-html-form.js"></script>
         <script src="jspsych/dist/plugin-survey-likert.js"></script>
         <script src="jspsych/dist/plugin-reconstruction.js"></script>
-
+        <script src="jspsych/plugin-call-function.js"></script>
 
         <link href="jspsych/dist/jspsych.css" rel="stylesheet" type="text/css" />
         <link rel="stylesheet" href="https://unpkg.com/jspsych@7.0.0/css/jspsych.css">
@@ -66,6 +66,9 @@
         const num_ima_trials = 1; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
 
+        const num_trials_main  = 20; /* per block discrimination */
+        const num_blocks = 2; 
+
         const CONDITION = 1 /*rotation - high cognitive control condition*/
 
         const practice_angle_left = -90
@@ -80,6 +83,14 @@
         window.block_num = 0;
 
         /* ESSENTIALS */
+        /* update trial number */
+        var update_trial_number = {
+        type: jsPsychCallFunction,
+        func: function() {
+            window.trl_num++;
+        }
+        };
+
 
         /* TIMELINE */
         var timeline = [];
@@ -650,6 +661,83 @@
             starting_value: 0,
             data: {test_part: 'trial_rotation'},
         };
+
+        /* DISCRIMINATION */
+        var detection_start = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+            <p> During the final part of the experiment you will discriminate left and right tilted gratings </p>
+            <p>On every trial, a grating will gradually appear in the noise </p>
+            <p>Sometimes the grating will be left tilted and sometimes it will be right tilted </p>
+            <p>After each trial, if you saw a left tilted grating press [F] </p>
+            <p>If you saw a right tilted grating press [J] </p>
+            <p>The gratings will be quite hard to see, so please look carefully </p>
+            <p>There wil be ` + num_blocks +  ` discrimination blocks lasting ~1 min each </p>`,
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
+            choices: [' ']
+            };
+        timeline.push(detection_start);
+
+        /* run over blocks */
+        var response = ['F','J'];
+        for (var block = 0; block < num_blocks; block++){
+
+        var block_start = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+            window.trl_num = 0;
+            window.trial_order = jsPsych.randomization.repeat([1,2],num_trials_main/2);
+            return "<br> This is block " + (window.block_num+1) + " out of " + num_blocks +
+            "<br> <br> Press [space] to continue "
+        },
+        choices: [' ']
+        };
+        timeline.push(block_start);
+
+        /* trial loop */
+        for (var trl = 0; trl < num_trials_main; trl++){
+
+            var show_dynamic_stimulus = {
+            type: jsPsychAnimation,
+            stimuli: function() {
+
+                window.stim_nr = window.trial_order[window.trl_num];
+                arr = makeStimSequence(1, window.vis_level,num_steps,window.stim_nr);
+                return arr
+            },
+            choices: "NO_KEYS" ,
+            frame_isi: 0,
+            frame_time: Math.round(stim_dur/num_steps),
+            on_finish: function(){
+                console.log(window.stim_nr);
+            }
+            };
+
+            var response_screen = {
+            type: jsPsychHtmlKeyboardResponse,
+            choices: ['F','J'],
+            stimulus: 'Was there a left tilted or right tilted grating on the screen?',
+            prompt: 'Left tilted [F] - Right tilted [J]',
+            data: function() {
+                window.stim_nr = window.trial_order[window.trl_num];
+                return {test_part: 'discrimination_test', correct_response: response[window.stim_nr-1]}
+            },
+            on_finish: function(data){
+                data.correct = data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(data.correct_response);
+            }
+            };
+            timeline.push(fixation_generation,show_dynamic_stimulus,response_screen,update_trial_number);
+        }
+
+        /* update block number */
+        var update_block_number = {
+            type: jsPsychCallFunction,
+            func: function() {
+            window.block_num++;
+            }
+        };
+        timeline.push(update_block_number);
+        }
 
 
         /* DEBRIEF */
