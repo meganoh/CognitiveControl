@@ -8,6 +8,8 @@ body {
   .jspsych-content {
     max-width: 80%; 
   }
+
+label
   .jspsych-survey-likert-opt-label {
     color: white;
   }

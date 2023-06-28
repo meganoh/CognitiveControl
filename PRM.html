@@ -121,10 +121,10 @@
             var angle = 0 + Math.round(angle_change*720) - 360;
             var html_rotation = `
                 <style> 
-                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                    .rotateimage {transform: rotate(` + angle + `deg); position: relative; z-index: -1;} 
                 </style>
 
-                <p> <strong> Practice Trials </strong> </p>
+                <h1> Practice Trials </h1>
                 <br>
                 <p> Please rotate this grating to `+ preferred_angle + `. </p>
                 <img src='img/stim15.png' class=rotateimage width=200></img>
@@ -141,10 +141,10 @@
             var angle = 0 + Math.round(angle_change*720) - 360;
             var html_rotation = `
                 <style> 
-                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                    .rotateimage {transform: rotate(` + angle + `deg); position: relative; z-index: -1;}
                 </style>
 
-                <p> <strong> Practice Trials </strong> </p>
+                <h1> Practice Trials </h1>
                 <br>
                 <p> Please rotate this grating to `+ preferred_angle + `. </p>
                 <img src='img/stim15.png' class=rotateimage width=200></img>
@@ -162,13 +162,13 @@
                 var practice_response = jsPsych.data.getLastTrialData().select('response_correct').values;
                 if(practice_response == 'true') {
                     return `
-                        <p> <strong> Practice Trials </strong> </p>
+                        <h1> Practice Trials </h1>
                         <br>
                         <p> Your response was correct. Well done!</p>
                         <img src='img/stim_response_correct.png' width=200></img>`;
                 } else {
                     return `
-                        <p> <strong> Practice Trials </strong> </p>
+                        <h1> Practice Trials </h1>
                         <br>
                         <p> Your response was incorrect. Try again. </p>
                         <img src='img/stim_response_incorrect.png' width=200></img>`;
@@ -253,7 +253,7 @@
         var instructions = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
-                <p> <strong> Instructions </strong>
+                <h1> Instructions </h1>
                 <br>
                 <p> During the next part of this experiment you will imagine <strong> gratings </strong> while looking at <strong> noise </strong> (see below). </p>
                 <p> <strong> Gratings </strong> are images of alternating black and white lines (left). </p>
@@ -271,7 +271,7 @@
         var practice_instructions = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
-            <p> <strong> Practice Trials </strong> </p>
+            <h1> Practice Trials </h1>
             <br>
             <p> Throughout the experiment you will be asked to rotate gratings. </p>
             <img src='img/stim15.png' width=200 ></img>`,
@@ -303,8 +303,6 @@
             loop_function: function(data) {
                 var list_of_responses = jsPsych.data.get().select('response_correct').values;
                 var last_response = list_of_responses[list_of_responses.length - 1];
-                console.log(list_of_responses);
-                console.log(last_response);
                 if(last_response) {
                     return false;
                 } else {
@@ -335,8 +333,6 @@
             loop_function: function(data) {
                 var list_of_responses = jsPsych.data.get().select('response_correct').values;
                 var last_response = list_of_responses[list_of_responses.length - 1];
-                console.log(list_of_responses);
-                console.log(last_response);
                 if(last_response) {
                     return false;
                 } else {
@@ -351,7 +347,7 @@
         var practice_instructions = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
-            <p> <strong> Practice Trials </strong> </p>
+            <h1> Practice Trials </h1>
             <br>
             <p> You will no longer see the current angel. This may be more difficult but try your best. </p>
             <img src='img/stim15.png' width=200 ></img>
@@ -383,8 +379,6 @@
             loop_function: function(data) {
                 var list_of_responses = jsPsych.data.get().select('response_correct').values;
                 var last_response = list_of_responses[list_of_responses.length - 1];
-                console.log(list_of_responses);
-                console.log(last_response);
                 if(last_response) {
                     return false;
                 } else {
@@ -415,8 +409,6 @@
             loop_function: function(data) {
                 var list_of_responses = jsPsych.data.get().select('response_correct').values;
                 var last_response = list_of_responses[list_of_responses.length - 1];
-                console.log(list_of_responses);
-                console.log(last_response);
                 if(last_response) {
                     return false;
                 } else {
@@ -479,7 +471,7 @@
                     var stim_pic = 'img/stim_2_vis_50.png';
                 }
                 return `
-                    <p> <strong> Practice Trials </strong> </p>
+                    <h1> Practice Trials </h1>
                     <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented </p> 
                     <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
                     <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
@@ -511,7 +503,7 @@
                     var stim_pic = 'img/stim_2_vis_50.png';
                 }
                 return `
-                    <p> <strong> Practice Trials </strong> </p>
+                    <h1> Practice Trials </h1>
                     <br>
                     <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented. </p> 
                     <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
@@ -538,7 +530,7 @@
         var information_test_trial_start = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
-            <p> <strong> Attention </strong> </p>
+            <h1> Attention </h1>
             <br> 
             <p> You have completed all practice trials. </p>
             <p> Next, you will complete 10 normal trials that are like what you have practiced before. </p>
