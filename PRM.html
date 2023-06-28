@@ -24,14 +24,11 @@
     Timeline: 
     1. Information
     2. Consent 
-    3. Rotation practice 
-        a. remove text showing angle for no text practice
+    3. Rotation practice
         b. turn percentages into angles in data column
-        a. include percentage as setting
 
         e. 15 & 135 degrees (Make sure they’re not 90 degrees apart)
         f. Same spatial frequency as the other studies 
-        g. check it is +/-10 over multiple trials to make sure
     4. Imagery practice 
         a. Look at her paper, generate image from dynamic noise, vividness rating, no feedback for these
         b. No rotation, just imagery and indicating vividness during noise 
@@ -74,6 +71,8 @@
         const practice_angle_left = -90
         const practice_angle_right = 180
 
+        const rotation_error_margin = 0.05 /*where 0.1 = 72°*/
+
         /* GLOBAL VARIABLES */
         window.vis_level = 38;
         window.stim_id  = 0; /* left */
@@ -91,24 +90,9 @@
           stimulus: `
                 <p> Press space when you have generated the image</p>
                 <p> </p>
-                    
                 <div style="font-size:60px;">+</div>`,
           choices: [' '],
-          trial_duration: fix_dur,
-          data: {task: 'fixation'}
-        };
-
-        /* FIXATION - need to change instructions if participants need to rotate*/
-        var fixation_generation = {
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `
-                <p> Press space when you have generated the image</p>
-                <p> </p>
-                    
-                <div style="font-size:60px;">+</div>`,
-          choices: [' '],
-          trial_duration: fix_dur,
-          data: {task: 'fixation'}
+          data: {task: 'fixation_image_generation'}
         };
 
 
@@ -132,7 +116,7 @@
 
         /* FUNCTIONS */
         /* FUNCTION FOR ROTATION STIMULUS */
-        var create_practice_rotation_function = function(preferred_angle) {
+        var create_practice_rotation_function_with_angle = function(preferred_angle) {
             var practice_rotation_function = function(angle_change) {
             var angle = 0 + Math.round(angle_change*720) - 360;
             var html_rotation = `
@@ -142,10 +126,30 @@
 
                 <p> <strong> Practice Trials </strong> </p>
                 <br>
-                <p> Please rotate this grating to `+ preferred_angle + ` </p>
+                <p> Please rotate this grating to `+ preferred_angle + `. </p>
                 <img src='img/stim15.png' class=rotateimage width=200></img>
-                <p> The current angle is ` + angle + `.
-                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>`;
+                <p> The current angle is ` + angle + `. </p>
+                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
+                <p> Click <strong> Save Response </strong> to continue. </p>`;
+            return html_rotation;
+            };
+            return practice_rotation_function;
+        };
+
+        var create_practice_rotation_function_without_angle = function(preferred_angle) {
+            var practice_rotation_function = function(angle_change) {
+            var angle = 0 + Math.round(angle_change*720) - 360;
+            var html_rotation = `
+                <style> 
+                    .rotateimage {transform: rotate(` + angle + `deg);} 
+                </style>
+
+                <p> <strong> Practice Trials </strong> </p>
+                <br>
+                <p> Please rotate this grating to `+ preferred_angle + `. </p>
+                <img src='img/stim15.png' class=rotateimage width=200></img>
+                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
+                <p> Click <strong> Save Response </strong> to continue. </p>`;
             return html_rotation;
             };
             return practice_rotation_function;
@@ -160,17 +164,17 @@
                     return `
                         <p> <strong> Practice Trials </strong> </p>
                         <br>
-                        <p> Your response was correct. </p>
+                        <p> Your response was correct. Well done!</p>
                         <img src='img/stim_response_correct.png' width=200></img>`;
                 } else {
                     return `
                         <p> <strong> Practice Trials </strong> </p>
                         <br>
-                        <p> Your response was incorrect. </p>
+                        <p> Your response was incorrect. Try again. </p>
                         <img src='img/stim_response_incorrect.png' width=200></img>`;
                 }
             },
-            prompt: '<p> Press <strong> SPACE </strong> to continue </p>',
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
         };
         
@@ -249,14 +253,15 @@
         var instructions = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
+                <p> <strong> Instructions </strong>
+                <br>
                 <p> During the next part of this experiment you will imagine <strong> gratings </strong> while looking at <strong> noise </strong> (see below). </p>
                 <p> <strong> Gratings </strong> are images of alternating black and white lines (left). </p>
                 <p> <strong> Noise </strong> is a collection of random black and white pixels (middle). </p>
                 <p> Please imagine the grating as vividly as possible, as if it was actually presented on the screen (right). </p>
                 <p> After every trial you will be asked to report how vivid your imagery was. </p>
-                <img src='img/example_stim-01.png' width=600 ></img>
-                <p>Press [space] to continue </p>
-            `,
+                <img src='img/example_stim-01.png' width=600 ></img>`,
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
         };
         timeline.push(instructions);
@@ -270,7 +275,7 @@
             <br>
             <p> Throughout the experiment you will be asked to rotate gratings. </p>
             <img src='img/stim15.png' width=200 ></img>`,
-            prompt: '<p> Press <strong> SPACE </strong> to continue. </p>',
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
         };
         timeline.push(practice_instructions);
@@ -280,11 +285,12 @@
         /* PRACTICE TRIAL ROTATION LEFT */
         var practice_rotation = {
             type: jsPsychReconstruction,
-            stim_function: create_practice_rotation_function(practice_angle_left),
+            stim_function: create_practice_rotation_function_with_angle(practice_angle_left),
             key_increase: 'ArrowRight',
             key_decrease: 'ArrowLeft',
             step_size: 1/720,
             starting_value: 0.5,
+            button_label: 'Save Response',
             data: {test_part: 'practice_rotation', correct_response: practice_angle_left},
             on_finish: function(data) {
                 data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
@@ -311,11 +317,12 @@
         /* PRACTICE TRIAL ROTATION RIGHT */
         var practice_rotation = {
             type: jsPsychReconstruction,
-            stim_function: create_practice_rotation_function(practice_angle_right),
+            stim_function: create_practice_rotation_function_with_angle(practice_angle_right),
             key_increase: 'ArrowRight',
             key_decrease: 'ArrowLeft',
             step_size: 1/720,
             starting_value: 0.5,
+            button_label: 'Save Response',
             data: {test_part: 'practice_rotation', correct_response: practice_angle_right},
             on_finish: function(data) {
                 data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
@@ -347,8 +354,9 @@
             <p> <strong> Practice Trials </strong> </p>
             <br>
             <p> You will no longer see the current angel. This may be more difficult but try your best. </p>
-            <img src='img/stim15.png' width=200 ></img>`,
-            prompt: '<p> Press <strong> SPACE </strong> to continue. </p>',
+            <img src='img/stim15.png' width=200 ></img>
+            <p> <s> The current angle is 0° </s> </p>`,
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
         };
         timeline.push(practice_instructions);
@@ -357,15 +365,16 @@
         /* PRACTICE TRIAL ROTATION LEFT */
         var practice_rotation = {
             type: jsPsychReconstruction,
-            stim_function: create_practice_rotation_function(practice_angle_left),
+            stim_function: create_practice_rotation_function_without_angle(practice_angle_left),
             key_increase: 'ArrowRight',
             key_decrease: 'ArrowLeft',
             step_size: 1/720,
             starting_value: 0.5,
+            button_label: 'Save Response',
             data: {test_part: 'practice_rotation', correct_response: practice_angle_left},
             on_finish: function(data) {
                 data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
-                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001 + 0.05;
+                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001 + rotation_error_margin;
             }
         };
 
@@ -388,15 +397,16 @@
         /* PRACTICE TRIAL ROTATION RIGHT */
         var practice_rotation = {
             type: jsPsychReconstruction,
-            stim_function: create_practice_rotation_function(practice_angle_right),
+            stim_function: create_practice_rotation_function_without_angle(practice_angle_right),
             key_increase: 'ArrowRight',
             key_decrease: 'ArrowLeft',
             step_size: 1/720,
             starting_value: 0.5,
+            button_label: 'Save Response',
             data: {test_part: 'practice_rotation', correct_response: practice_angle_right},
             on_finish: function(data) {
                 data.response_outcome = Math.abs((data.final_value) - ((360 + (data.correct_response))/720));
-                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001 + 0.05;
+                data.response_correct = Math.abs((data.final_value) - ((360 + (data.correct_response))/720)) < 0.001 + rotation_error_margin;
             }
         };
         
@@ -469,13 +479,14 @@
                     var stim_pic = 'img/stim_2_vis_50.png';
                 }
                 return `
+                    <p> <strong> Practice Trials </strong> </p>
                     <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented </p> 
                     <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
                     <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
                     <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
                     <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
                     <img src=` + stim_pic + ` width=200 ></img>
-                    <p>Press [space] to continue </p>` 
+                    <p> Press <strong> Space </strong> to continue. </p>` 
             },
             choices: [' '],
             post_trial_gap: 500, 
@@ -500,15 +511,17 @@
                     var stim_pic = 'img/stim_2_vis_50.png';
                 }
                 return `
-                    <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented </p> 
+                    <p> <strong> Practice Trials </strong> </p>
+                    <br>
+                    <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented. </p> 
                     <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
                     <p> Then, rotate the image by *INSERT DEGREES HERE*. </p>
                     <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
                     <p> After each trial, you will be asked to rate the vividness of your imagery then indicate your imagined image. </p> 
                     <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
-                    <img src=` + stim_pic + ` width=200 ></img>
-                    <p>Press [space] to continue </p>` 
+                    <img src=` + stim_pic + ` width=200 ></img>` 
             },
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
             post_trial_gap: 500, 
         }
@@ -522,6 +535,18 @@
 
         /* 9 + 1 TRIALS */
         /* INSTRUCTIONS */
+        var information_test_trial_start = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+            <p> <strong> Attention </strong> </p>
+            <br> 
+            <p> You have completed all practice trials. </p>
+            <p> Next, you will complete 10 normal trials that are like what you have practiced before. </p>
+            <p> Instructions will be repeated on the next screen. </p>`,
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
+            choices: [' '],
+        };
+
         var instructions_imagery = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: function() {
@@ -533,20 +558,22 @@
                     var stim_pic = 'img/stim_2_vis_50.png';
                 }
                 return `
-                    <p> Now, we'll do a combination of everything we've just practiced. Let's recap: </p> 
-                    <p> First,imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
+                    <p> Instructions recap: </p> 
+                    <p> First, imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
                     <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
                     <p> On some trials, you will be asked to rotate the image to a 90 or 180 degrees. </p> 
                     <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
                     <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
-                    <img src=` + stim_pic + ` width=200 ></img>
-                    <p>Press [space] to continue </p>` 
+                    <img src=` + stim_pic + ` width=200 ></img>` 
             },
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
             post_trial_gap: 500, 
         }
         timeline.push(instructions_imagery);
 
+
+        /* 9 NORMAL TRIALS */
         var ima_procedure = {
             timeline: [fixation_generation, show_dynamic_noise, ima_response],
             repetitions: num_ima_trials
@@ -559,9 +586,8 @@
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
             <p> In this trial, please imagine the grating. </p>
-            <p> Then, please rotate the grating by 60° while the fixation cross is presented. </p> 
-            <p> Please press [space] when you are ready </p>
-            `,
+            <p> Then, please rotate the grating by 60° while the fixation cross is presented. </p>`,
+            prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' ']
         };
 
@@ -670,6 +696,7 @@
 
         /* INIT JS PSYCH */
         var jsPsych = initJsPsych({
+            minimum_valid_rt: 500,
             on_finish: function() {
                 jsPsych.data.displayData();
             }

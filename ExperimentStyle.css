@@ -2,9 +2,12 @@ body {
     background-color: rgb(128, 128,128);
   }
   .jspsych-display-element {
-    font-size: 25px;
+    font-size: 20px;
     color: white;
   }
   .jspsych-content {
     max-width: 80%; 
+  }
+  .jspsych-survey-likert-opt-label {
+    color: white;
   }
