@@ -166,6 +166,25 @@
             return practice_rotation_function;
         };
 
+        var create_imagery_practice_rotation_function = function(preferred_angle) {
+            var practice_rotation_function = function(angle_change) {
+            var angle = 0 + Math.round(angle_change*720) - 360;
+            var html_rotation = `
+                <style> 
+                    .rotateimage {transform: rotate(` + angle + `deg); position: relative; z-index: -1;}
+                </style>
+
+                <h1> Practice Trials </h1>
+                <br>
+                <p> Please rotate this grating to the orientation at which you imagined it. </p>
+                <img src='img/stim15.png' class=rotateimage width=200></img>
+                <p> Press <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> to rotate the grating. </p>
+                <p> Click <strong> Save Response </strong> to continue. </p>`;
+            return html_rotation;
+            };
+            return practice_rotation_function;
+        };
+
         /* FUNCTION FOR PRACTICE FEEDBACK */
         var practice_feedback = {
             type: jsPsychHtmlKeyboardResponse,
@@ -207,7 +226,7 @@
         var extra_images = ['img/stim15.png', 'img/stim75.png', 'img/stim135.png', 'img/stim_response_correct.png', 'img/stim_response_incorrect.png'];
         var pre_load_extra = {
             type: jsPsychPreload,
-            images: ['img/stim15.png'],
+            images: extra_images,
             message: "Loading all the extras.",
             show_progress_bar: true,
         };
@@ -498,7 +517,7 @@
 
         var ima_practice = {
             timeline: [fixation_generation, show_dynamic_noise, ima_response],
-            repetitions: 3
+            repetitions: 2
         };
         timeline.push(ima_practice);
 
@@ -530,9 +549,26 @@
         }
         timeline.push(instructions_imageryRotationPractice);
 
+        const placeholder_angle = 0
+
+        var imagery_practice_rotation = {
+            type: jsPsychReconstruction,
+            stim_function: create_imagery_practice_rotation_function(placeholder_angle),
+            key_increase: 'ArrowRight',
+            key_decrease: 'ArrowLeft',
+            step_size: 1/720,
+            starting_value: 0.5,
+            button_label: 'Save Response',
+            data: {test_part: 'imagery_practice_rotation',},
+            on_finish: function(data) {
+                data.response_as_angle = data.final_value*720 - 360;
+            }
+        };
+        timeline.push(imagery_practice_rotation);
+        
         var imaRot_practice = {
-            timeline: [fixation_generation, show_dynamic_noise, ima_response],
-            repetitions: 3
+            timeline: [fixation_generation, show_dynamic_noise, ima_response, imagery_practice_rotation],
+            repetitions: 2
         };
         timeline.push(ima_practice);
 
@@ -549,6 +585,7 @@
             prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
         };
+        timeline.push(information_test_trial_start);
 
         var instructions_imagery = {
             type: jsPsychHtmlKeyboardResponse,
