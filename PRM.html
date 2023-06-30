@@ -26,20 +26,14 @@
     2. Consent 
     3. Rotation practice
         b. turn percentages into angles in data column
-
-        e. 15 & 135 degrees (Make sure they’re not 90 degrees apart)
-        f. SF = 1cpd (see Albers 2013)
-    4. Imagery practice 
-        a. Look at her paper, generate image from dynamic noise, vividness rating, no feedback for these
+    4. Imagery practice
         b. No rotation, just imagery and indicating vividness during noise 
     5. Imagery & rotation practice 
         a. Give feedback on correctness
         give feedback here 
     6. Instructions 
     7. 9 + 1 trials 
-        2 cues (A/B) - counterbalanced 
-        Fixation cross (throughout the dynamic stimulus) 
-        Image generation (DURING NOISE)	
+        2 cues (A/B) 
         Practice - counterbalance, rotate image
         Crucial - randomise rotate don’t rotate 
         Whatever they did less of 
@@ -47,11 +41,8 @@
         Probe (how did you imagine it)
         Actually rotate the image 
         CRUCIAL TRIAL - Reality judgement 
-        Did you see an image? yes/no
-        No image there
-        Did you see a grating presented in the noise  
-        What did you see 
-        Remove confidence 
+        Did you see a grating presented in the noise?  yes/no
+        What did you see? rotation
     8. Include discrimination task (as a control)
     9. Debrief 
     
@@ -78,6 +69,7 @@
 
         const placeholder_angle = 0
 
+
         /* GLOBAL VARIABLES */
         window.vis_level = 38;
         window.stim_id  = 0; /* left */
@@ -93,11 +85,18 @@
         }
         };
 
-
         /* TIMELINE */
         var timeline = [];
 
-        /* FIXATION - need to change instructions if participants need to rotate*/
+        /* FIXATION*/
+        var fixation = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: '<div style="font-size:60px;">+</div>',
+        choices: ["NO_KEYS"],
+        trial_duration: fix_dur,
+        data: {test_part: 'fixation'}
+        };
+
         var fixation_generation = {
           type: jsPsychHtmlKeyboardResponse,
           stimulus: `
@@ -108,6 +107,16 @@
           data: {task: 'fixation_image_generation'}
         };
 
+        /* Instruction for generation + rotation trials */
+        var fixation_rotation_generation = {
+          type: jsPsychHtmlKeyboardResponse,
+          stimulus: `
+                <p> Press space when you have generated the image and rotated it by 90° </p> 
+                <p> </p>
+                <div style="font-size:60px;">+</div>`,
+          choices: [' '],
+          data: {task: 'fixation_image_generation'}
+        };
 
         /* RESPONSE SCALES */
         var vividness_scale = [
@@ -539,7 +548,7 @@
                     <br>
                     <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented. </p> 
                     <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
-                    <p> Then, rotate the image by *INSERT DEGREES HERE*. </p>
+                    <p> Then, rotate the image by 90°. </p>
                     <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
                     <p> After each trial, you will be asked to rate the vividness of your imagery then indicate your imagined image. </p> 
                     <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
@@ -566,7 +575,7 @@
         };
 
         var imaRot_practice = {
-            timeline: [fixation_generation, show_dynamic_noise, ima_response, imagery_practice_rotation],
+            timeline: [fixation_rotation_generation, show_dynamic_noise, ima_response, imagery_practice_rotation],
             repetitions: 2
         };
         timeline.push(imaRot_practice);
@@ -579,7 +588,7 @@
             <h1> Attention </h1>
             <br> 
             <p> You have completed all practice trials. </p>
-            <p> Next, you will complete 10 normal trials that are like what you have practiced before. </p>
+            <p> Next, you will complete 10 trials that are a mix of imagery and imagery + rotation trials. </p>
             <p> Instructions will be repeated on the next screen. </p>`,
             prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
@@ -600,7 +609,7 @@
                     <h1> Instructions recap: </h1>
                     <p> First, imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
                     <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
-                    <p> On some trials, you will be asked to rotate the image to a 90 or 180 degrees. </p> 
+                    <p> On some trials, you will be asked to rotate the image to a 90°. </p> 
                     <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
                     <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
                     <img src=` + stim_pic + ` width=200 ></img>` 
@@ -625,7 +634,7 @@
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
             <p> In this trial, please imagine the grating. </p>
-            <p> Then, please rotate the grating by 60° while the fixation cross is presented. </p>`,
+            <p> Then, please rotate the grating by 90° while the fixation cross is presented. </p>`,
             prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' ']
         };
@@ -658,18 +667,7 @@
             },
         };
 
-
-        var confidence_judgement_crit = {
-            type: jsPsychSurveyLikert,
-            preamble: '<p> <strong> Confidence Judgement </strong> </p>',
-            questions: [
-                {prompt: "How confident are you that you answered the last question correctly?", name: "confidence_crit", labels: confidence_scale, required: true},
-            ],
-            scale_width: 500,
-            data: {test_part: 'confidence judgement'},
-        };
-
-        timeline.push(rotate_instruction, fixation_generation, show_dynamic_stimulus, ima_response, critical_question, confidence_judgement_crit);
+        timeline.push(rotate_instruction, fixation_generation, show_dynamic_stimulus, ima_response, critical_question);
         
         /* ROTATION AFTER CRITICAL QUESTION */
         var trial_rotation_function = function(angle_change) {
@@ -698,6 +696,7 @@
             data: {test_part: 'trial_rotation'},
         };
 
+        
         /* DISCRIMINATION */
         var detection_start = {
             type: jsPsychHtmlKeyboardResponse,
@@ -718,61 +717,62 @@
         var response = ['F','J'];
         for (var block = 0; block < num_blocks; block++){
 
-        var block_start = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: function() {
-            window.trl_num = 0;
-            window.trial_order = jsPsych.randomization.repeat([1,2],num_trials_main/2);
-            return "<br> This is block " + (window.block_num+1) + " out of " + num_blocks +
-            "<br> <br> Press [space] to continue "
-        },
-        choices: [' ']
-        };
-        timeline.push(block_start);
-
-        /* trial loop */
-        for (var trl = 0; trl < num_trials_main; trl++){
-
-            var show_dynamic_stimulus = {
-            type: jsPsychAnimation,
-            stimuli: function() {
-
-                window.stim_nr = window.trial_order[window.trl_num];
-                arr = makeStimSequence(1, window.vis_level,num_steps,window.stim_nr);
-                return arr
+            var block_start = {
+                type: jsPsychHtmlKeyboardResponse,
+                stimulus: function() {
+                window.trl_num = 0;
+                window.trial_order = jsPsych.randomization.repeat([1,2],num_trials_main/2);
+                return "<br> This is block " + (window.block_num+1) + " out of " + num_blocks +
+                "<br> <br> Press [space] to continue "
             },
-            choices: "NO_KEYS" ,
-            frame_isi: 0,
-            frame_time: Math.round(stim_dur/num_steps),
-            on_finish: function(){
-                console.log(window.stim_nr);
-            }
+            choices: [' ']
             };
+            timeline.push(block_start);
 
-            var response_screen = {
-            type: jsPsychHtmlKeyboardResponse,
-            choices: ['F','J'],
-            stimulus: 'Was there a left tilted or right tilted grating on the screen?',
-            prompt: 'Left tilted [F] - Right tilted [J]',
-            data: function() {
-                window.stim_nr = window.trial_order[window.trl_num];
-                return {test_part: 'discrimination_test', correct_response: response[window.stim_nr-1]}
-            },
-            on_finish: function(data){
-                data.correct = data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(data.correct_response);
+            /* trial loop */
+            for (var trl = 0; trl < num_trials_main; trl++){
+
+                var show_dynamic_stimulus = {
+                type: jsPsychAnimation,
+                stimuli: function() {
+
+                    window.stim_nr = window.trial_order[window.trl_num];
+                    arr = makeStimSequence(1, window.vis_level,num_steps,window.stim_nr);
+                    jsPsych.pluginAPI.preloadImages(arr)
+                    return arr
+                },
+                choices: ["NO_KEYS"] ,
+                frame_isi: 0,
+                frame_time: Math.round(stim_dur/num_steps),
+                on_finish: function(){
+                    console.log(window.stim_nr);
+                }
+                };
+
+                var response_screen = {
+                type: jsPsychHtmlKeyboardResponse,
+                choices: ['F','J'],
+                stimulus: 'Was there a left tilted or right tilted grating on the screen?',
+                prompt: 'Left tilted [F] - Right tilted [J]',
+                data: function() {
+                    window.stim_nr = window.trial_order[window.trl_num];
+                    return {test_part: 'discrimination_test', correct_response: response[window.stim_nr-1]}
+                },
+                on_finish: function(data){
+                    data.correct = data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(data.correct_response);
+                }
+                };
+                timeline.push(fixation,show_dynamic_stimulus,response_screen,update_trial_number);
             }
+
+            /* update block number */
+            var update_block_number = {
+                type: jsPsychCallFunction,
+                func: function() {
+                window.block_num++;
+                }
             };
-            timeline.push(fixation_generation,show_dynamic_stimulus,response_screen,update_trial_number);
-        }
-
-        /* update block number */
-        var update_block_number = {
-            type: jsPsychCallFunction,
-            func: function() {
-            window.block_num++;
-            }
-        };
-        timeline.push(update_block_number);
+            timeline.push(update_block_number);
         }
 
 
