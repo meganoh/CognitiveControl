@@ -52,7 +52,7 @@
   
         const num_steps = 20;
         const stim_dur  = 2000; /* milliseconds */
-        const fix_dur = 5000;
+        const fix_dur = 200;
 
         const num_ima_trials = 1; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
@@ -84,6 +84,7 @@
             window.trl_num++;
         }
         };
+
 
         /* TIMELINE */
         var timeline = [];
@@ -759,10 +760,10 @@
                     return {test_part: 'discrimination_test', correct_response: response[window.stim_nr-1]}
                 },
                 on_finish: function(data){
-                    data.correct = data.key_press == jsPsych.pluginAPI.convertKeyCharacterToKeyCode(data.correct_response);
+                    data.correct = data.key_press; /*need to check the output for this is understandable */
                 }
                 };
-                timeline.push(fixation,show_dynamic_stimulus,response_screen,update_trial_number);
+                timeline.push(fixation,show_dynamic_stimulus,response_screen, update_trial_number);
             }
 
             /* update block number */
