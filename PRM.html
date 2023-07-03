@@ -54,10 +54,10 @@
         const stim_dur  = 2000; /* milliseconds */
         const fix_dur = 200;
 
-        const num_ima_trials = 1; /*10th is the critical one */
+        const num_ima_trials = 2; /*10th is the critical one */
         const num_ima_reps = 1; /* how often to repeat the 2 orientations */
 
-        const num_trials_main  = 20; /* per block discrimination */
+        const num_trials_main  = 10; /* per block discrimination */
         const num_blocks = 2; 
 
         const CONDITION = 1 /*rotation - high cognitive control condition*/
@@ -723,8 +723,12 @@
                 stimulus: function() {
                 window.trl_num = 0;
                 window.trial_order = jsPsych.randomization.repeat([1,2],num_trials_main/2);
-                return "<br> This is block " + (window.block_num+1) + " out of " + num_blocks +
-                "<br> <br> Press [space] to continue "
+                return `
+                <br> 
+                <p> This is block ` + (window.block_num+1) + ` out of ` + num_blocks + `. </p>
+                <br> 
+                <br> 
+                <p> Press <strong> SPACE </strong> to continue. </p>`
             },
             choices: [' ']
             };
@@ -754,13 +758,14 @@
                 type: jsPsychHtmlKeyboardResponse,
                 choices: ['F','J'],
                 stimulus: 'Was there a left tilted or right tilted grating on the screen?',
-                prompt: 'Left tilted [F] - Right tilted [J]',
+                prompt: 'Left tilted <strong> F </strong> - Right tilted <strong> J </strong>',
                 data: function() {
                     window.stim_nr = window.trial_order[window.trl_num];
                     return {test_part: 'discrimination_test', correct_response: response[window.stim_nr-1]}
                 },
                 on_finish: function(data){
                     data.correct = data.key_press; /*need to check the output for this is understandable */
+                    data.response_correct = jsPsych.pluginAPI.compareKeys(data.correct_response, data.response);
                 }
                 };
                 timeline.push(fixation,show_dynamic_stimulus,response_screen, update_trial_number);
