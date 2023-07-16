@@ -29,7 +29,7 @@
   
         const num_steps = 20;
         const stim_dur  = 2000; /* milliseconds */
-        const fix_dur = 200;
+        const fix_dur = 250;
         const generation_dur = 3000;
 
         const num_ima_trials = 2; /*10th is the critical one */
@@ -46,6 +46,9 @@
         const rotation_error_margin = 0.05 /*where 0.1 = 72°*/
 
         const placeholder_angle = 0
+
+        const noise_duration = 5000
+        const noise_frame_interval = 100
 
 
         /* GLOBAL VARIABLES */
@@ -72,17 +75,6 @@
         data: {test_part: 'fixation'}
         };
 
-        /* Instruction for generation + rotation trials */
-        var fixation_rotation_generation = {
-          type: jsPsychHtmlKeyboardResponse,
-          stimulus: `
-                <p> Press space when you have generated the image and rotated it by 90° </p> 
-                <p> </p>
-                <div style="font-size:60px;">+</div>`,
-          choices: [' '],
-          data: {task: 'fixation_image_generation'}
-        };
-
         /* RESPONSE SCALES */
         var vividness_scale = [
             "1 (not at all vivid)",
@@ -101,6 +93,19 @@
             ];
 
         /* FUNCTIONS */
+
+        /* FUNCTION FOR DYNAMIC NOISE */
+        var noise_animation = function() {
+            arr = []
+            n_noise_frames = noise_duration/noise_frame_interval
+            order_of_noise = jsPsych.randomization.repeat([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20], 10);
+            for (var i = 0; i < n_noise_frames; i++) {
+                var random_number = order_of_noise[i];
+                arr.push("img/noise_" + random_number.toString() + ".png");
+            }
+            return arr
+        };
+
         /* FUNCTION FOR ROTATION STIMULUS */
         var create_practice_rotation_function_with_angle = function(preferred_angle) {
             var practice_rotation_function = function(angle_change) {
@@ -204,7 +209,6 @@
         };
         timeline.push(pre_load_extra);
 
-
         /* WELCOME MESSAGE */
         var welcome = {
             type: jsPsychHtmlKeyboardResponse,
@@ -269,48 +273,7 @@
         };
         timeline.push(instructions);
         
-        /* IMAGERY PROCEDURE */
-        function makeStimSequence(startValue, stopValue, cardinality, stim) {
-            var arr = [];
-            if (stim > 0 ){
-                var step = (stopValue - startValue) / (cardinality - 1);
-                for (var i = 0; i < cardinality; i++) {
-                    var vis = Math.round(startValue + (step * i));
-                    arr.push("img/stim_" + stim.toString() + "_vis_" + vis.toString() + ".png");
-                }
-            } else if (stim == 0){
-                ranNoiseOrder = jsPsych.randomization.repeat([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],1);
-                for (var i = 0; i < cardinality; i++) {
-                var random_number = ranNoiseOrder[i];
-                arr.push("img/noise_" + random_number.toString() + ".png");
-                }
-            }
-            return arr;
-        };
-
-        var show_dynamic_noise = {
-            type: jsPsychAnimation,
-            stimuli: function() {
-            arr = makeStimSequence(1, window.vis_level, num_steps, 0);
-            jsPsych.pluginAPI.preloadImages(arr)
-            return arr
-            },
-            choices: ["NO_KEYS"],
-            frame_isi: 0,
-            frame_time: Math.round(stim_dur/num_steps)
-        };
-
-        var ima_response = {
-            type: jsPsychSurveyLikert,
-            preamble: '<p> <strong> Vividness Judgement </strong> </p>',
-            questions: [
-                {prompt: "How vivid was your mental image?", name: "vividness judgement", labels: vividness_scale, required: true},
-            ],
-            scale_width: 500,
-            data: {test_part: 'vividness judgement'},
-        };
-
-
+        
         /* IMAGERY PRACTICE*/
         var instructions_imageryPractice = {
             type: jsPsychHtmlKeyboardResponse,
@@ -335,14 +298,44 @@
             },
             choices: [' '],
             post_trial_gap: 500, 
-        }
-        timeline.push(instructions_imageryPractice);
+        };
+
+        var brief_blank = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: ' ',
+        choices: ["NO_KEYS"],
+        trial_duration: 500,
+        data: {test_part: 'brief blank'}
+        };
+
+        var show_dynamic_noise = {
+            type: jsPsychAnimation,
+            stimuli: function() {
+                arr = noise_animation();
+                jsPsych.pluginAPI.preloadImages(arr)
+                return arr
+                },
+            choices: ["NO_KEYS"],
+            frame_isi: 0,
+            frame_time: noise_frame_interval
+        };
+
+        var ima_response = {
+            type: jsPsychSurveyLikert,
+            preamble: '<p> <strong> Vividness Judgement </strong> </p>',
+            questions: [
+                {prompt: "How vivid was your mental image?", name: "vividness judgement", labels: vividness_scale, required: true},
+            ],
+            scale_width: 500,
+            data: {test_part: 'vividness judgement'},
+        };
 
         var ima_practice = {
-            timeline: [fixation, show_dynamic_noise, ima_response],
+            timeline: [brief_blank, fixation, show_dynamic_noise, ima_response],
             repetitions: 2
         };
-        timeline.push(ima_practice);
+
+        timeline.push(instructions_imageryPractice, ima_practice);
 
 
         /* ROTATION PRACTICE INSTRUCTIONS */
@@ -351,7 +344,7 @@
             stimulus: `
             <h1> Practice Trials </h1>
             <br>
-            <p> You will now practice rotating gratings. </p>
+            <p> You will now practice rotating gratings. This task will later be used to collect your responses. </p>
             <p> On the next screen, please rotate a shown grating to a given orientation. </p> 
             <p> Press the <strong> LEFT-ARROW </strong> or <strong> RIGHT-ARROW </strong> key to rotate the grating. </p>
             <p> For this practice round, the angle of rotation will be display on the screen. </p>
@@ -430,7 +423,9 @@
             stimulus: `
             <h1> Practice Trials </h1>
             <br>
-            <p> The angle of rotation will no longer be displayed. It may be more difficult but try your best. </p>
+            <p> On the next trials you will still practice rotating gratings. </p>
+            <p> However, unlike before the angle of rotation will no longer be displayed. </p> 
+            <p> It may seem more difficult but try your best. Take as much time as you need. </p>
             <img src='img/stim15.png' width=200 ></img>
             <p> <s> The angle of rotation is 0° </s> </p>`,
             prompt: '<p> Press <strong> Space </strong> to continue. </p>',
@@ -515,12 +510,10 @@
                 return `
                     <h1> Practice Trials </h1>
                     <br>
-                    <p> During the next few trials, please imagine ` + stim_instr + ` when a fixation cross is presented. </p> 
-                    <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
-                    <p> Then, rotate the image by 90°. </p>
-                    <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
-                    <p> After each trial, you will be asked to rate the vividness of your imagery then indicate your imagined image. </p> 
-                    <p> On a scale from 1 (not at all vivid) to 5 (perfectly clear and as vivid as real seeing). </p>
+                    <p> During the next few trials you will practice both the image generation and rotation task together. </p>
+                    <p> First, you will have to generate an image in your mind and rate its vividness. Then you will have to rotate a grating to that image. </p> 
+                    <p> Remember to keep your eyes open and maintain the image in your mind when noise is presented. </p>
+                    <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p> 
                     <img src=` + stim_pic + ` width=200 ></img>` 
             },
             prompt: '<p> Press <strong> Space </strong> to continue. </p>',
@@ -544,7 +537,7 @@
         };
 
         var imaRot_practice = {
-            timeline: [fixation_rotation_generation, show_dynamic_noise, ima_response, imagery_practice_rotation],
+            timeline: [brief_blank, fixation, show_dynamic_noise, ima_response, imagery_practice_rotation],
             repetitions: 2
         };
         timeline.push(imaRot_practice);
@@ -554,10 +547,10 @@
         var information_test_trial_start = {
             type: jsPsychHtmlKeyboardResponse,
             stimulus: `
-            <h1> Attention </h1>
+            <h1> Main Task </h1>
             <br> 
             <p> You have completed all practice trials. </p>
-            <p> Next, you will complete 10 trials that are a mix of imagery and imagery + rotation trials. </p>
+            <p> Next, you will complete 6 trials that are a mix of the imagery and rotation trials. </p>
             <p> Instructions will be repeated on the next screen. </p>`,
             prompt: '<p> Press <strong> Space </strong> to continue. </p>',
             choices: [' '],
@@ -575,7 +568,8 @@
                     var stim_pic = 'img/stim_2_vis_50.png';
                 }
                 return `
-                    <h1> Instructions recap: </h1>
+                    <h1> Main Experiment </h1>
+                    <br>
                     <p> First, imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
                     <p> When noise is presented, please keep your eyes open and maintain the image in your mind. </p>
                     <p> On some trials, you will be asked to rotate the image to a 90°. </p> 
@@ -592,7 +586,7 @@
 
         /* 9 NORMAL TRIALS */
         var ima_procedure = {
-            timeline: [fixation, show_dynamic_noise, ima_response],
+            timeline: [brief_blank, fixation, show_dynamic_noise, ima_response],
             repetitions: num_ima_trials
         };
         timeline.push(ima_procedure);
