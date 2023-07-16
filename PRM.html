@@ -75,6 +75,15 @@
         data: {test_part: 'fixation'}
         };
 
+        /* PRE_FIXATION BLANK */
+        var brief_blank = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: ' ',
+        choices: ["NO_KEYS"],
+        trial_duration: 500,
+        data: {test_part: 'brief blank'}
+        };
+
         /* RESPONSE SCALES */
         var vividness_scale = [
             "1 (not at all vivid)",
@@ -200,14 +209,14 @@
         };
         timeline.push(pre_load)
 
-        var extra_images = ['img/stim15.png', 'img/stim75.png', 'img/stim135.png', 'img/stim_response_correct.png', 'img/stim_response_incorrect.png'];
+        var extra_images = ['img/stim15.png', 'img/stim75.png', 'img/stim_response_correct.png', 'img/stim_response_incorrect.png'];
         var pre_load_extra = {
             type: jsPsychPreload,
             images: extra_images,
             message: "Loading all the extras.",
             show_progress_bar: true,
         };
-        timeline.push(pre_load_extra);
+        timeline.push(pre_load_extra);    
 
         /* WELCOME MESSAGE */
         var welcome = {
@@ -287,8 +296,9 @@
                 }
                 return `
                     <h1> Practice Trials </h1>
+                    <br>
                     <p> You will now practice generating an image in your mind.
-                    <p> On the next screen, please imagine ` + stim_instr + ` when noise is presented. </p> 
+                    <p> On the next screen you will be prompted with a grating to generate in your mind. </p> 
                     <p> Imagine the grating as vividly as possible, as if it was actually presented on the screen (see below). </p>
                     <p> Please keep your eyes open and maintain the image in your mind. </p>
                     <p> After each trial, you will be asked to rate the vividness of your imagery. </p> 
@@ -298,14 +308,6 @@
             },
             choices: [' '],
             post_trial_gap: 500, 
-        };
-
-        var brief_blank = {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: ' ',
-        choices: ["NO_KEYS"],
-        trial_duration: 500,
-        data: {test_part: 'brief blank'}
         };
 
         var show_dynamic_noise = {
@@ -331,7 +333,7 @@
         };
 
         var ima_practice = {
-            timeline: [brief_blank, fixation, show_dynamic_noise, ima_response],
+            timeline: [imagery_cue, brief_blank, fixation, show_dynamic_noise, ima_response],
             repetitions: 2
         };
 
