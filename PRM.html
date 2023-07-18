@@ -310,6 +310,21 @@
             post_trial_gap: 500, 
         };
 
+        var imagery_cue = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+                <p>Imagine grating A. </p>
+                <div style='width: 1000px;'>
+                    <div style='float: left;'>
+                        <img src='img_nofixation/stim15.png'></img>
+                        <p class='small'><strong> A </strong></p></div>
+                    <div style='float: right;'>
+                        <img src='img_nofixation/stim105.png'></img>
+                        <p class='small'><strong> B </strong></p></div>
+                </div>
+                <p>Press any key to begin.</p>`,
+        };
+
         var show_dynamic_noise = {
             type: jsPsychAnimation,
             stimuli: function() {
@@ -539,7 +554,7 @@
         };
 
         var imaRot_practice = {
-            timeline: [brief_blank, fixation, show_dynamic_noise, ima_response, imagery_practice_rotation],
+            timeline: [imagery_cue, brief_blank, fixation, show_dynamic_noise, ima_response, imagery_practice_rotation],
             repetitions: 2
         };
         timeline.push(imaRot_practice);
@@ -588,7 +603,7 @@
 
         /* 9 NORMAL TRIALS */
         var ima_procedure = {
-            timeline: [brief_blank, fixation, show_dynamic_noise, ima_response],
+            timeline: [imagery_cue, brief_blank, fixation, show_dynamic_noise, ima_response],
             repetitions: num_ima_trials
         };
         timeline.push(ima_procedure);
